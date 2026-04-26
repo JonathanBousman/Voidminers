@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#05060d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Void Miners" />
+<title>VOID MINERS // Deep Space Idle</title>
+<link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #05060d;
+    --bg-2: #0a0e1f;
+    --panel: rgba(14, 22, 44, 0.88);
+    --panel-glow: rgba(110, 240, 255, 0.06);
+    --panel-edge: rgba(120, 220, 255, 0.35);
+    --cyan: #6ef0ff;
+    --cyan-dim: #3aa0b8;
+    --magenta: #ff5ac8;
+    --gold: #ffd76a;
+    --violet: #b48aff;
+    --crimson: #ff5e6c;
+    --orange: #ff9f5a;
+    --green: #7dffb0;
+    --ink: #d8e8ff;
+    --ink-dim: #6f86a8;
+    --ok: #7dffb0;
+    --bad: #ff5e6c;
+    --era-tint: rgba(110, 240, 255, 0);
+  }
+
+/* Era visual progression — body absorbs era tint */
+body[data-era=“1”] { –era-tint: rgba(125, 255, 176, 0.04); }
+body[data-era=“2”] { –era-tint: rgba(255, 215, 106, 0.04); }
+body[data-era=“3”] { –era-tint: rgba(180, 138, 255, 0.06); }
+body[data-era=“4”] { –era-tint: rgba(255, 90, 200, 0.08); }
+
+- { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+  background: var(–bg); color: var(–ink);
+  font-family: ‘JetBrains Mono’, monospace;
+  font-size: 14px; user-select: none;
+  overscroll-behavior: none;
+  }
+
+.stars {
+position: fixed; inset: 0; z-index: 0;
+background:
+radial-gradient(1.5px 1.5px at 12% 18%, #fff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 38% 82%, #fff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 67% 31%, #b9e6ff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 82% 67%, #fff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 24% 51%, #ffd6f5 99%, transparent 100%),
+radial-gradient(2.5px 2.5px at 91% 12%, #fff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 5% 73%, #fff 99%, transparent 100%),
+radial-gradient(1.5px 1.5px at 55% 5%, #b9e6ff 99%, transparent 100%),
+radial-gradient(1px 1px at 17% 35%, #fff 99%, transparent 100%),
+radial-gradient(1px 1px at 45% 14%, #b9e6ff 99%, transparent 100%),
+radial-gradient(1px 1px at 73% 49%, #fff 99%, transparent 100%),
+radial-gradient(1px 1px at 88% 88%, #ffd6f5 99%, transparent 100%),
+radial-gradient(1px 1px at 31% 67%, #fff 99%, transparent 100%),
+radial-gradient(1px 1px at 60% 92%, #b9e6ff 99%, transparent 100%),
+radial-gradient(2px 2px at 8% 41%, #fff 99%, transparent 100%),
+radial-gradient(2px 2px at 95% 55%, #fff 99%, transparent 100%),
+radial-gradient(ellipse at 70% 30%, rgba(110, 240, 255, 0.18), transparent 55%),
+radial-gradient(ellipse at 20% 80%, rgba(255, 90, 200, 0.14), transparent 60%),
+var(–bg);
+background-size: 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 100% 100%, 100% 100%, 100% 100%;
+animation: drift 180s linear infinite;
+}
+/* Era 3+ adds a violet nebula layer */
+body[data-era=“3”] .stars::after,
+body[data-era=“4”] .stars::after {
+content: ‘’; position: fixed; inset: 0; pointer-events: none;
+background:
+radial-gradient(ellipse at 30% 60%, rgba(180,138,255,0.12), transparent 50%),
+radial-gradient(ellipse at 80% 20%, rgba(255,90,200,0.08), transparent 50%);
+animation: nebulaShift 60s ease-in-out infinite alternate;
+}
+@keyframes nebulaShift {
+from { transform: translateX(-30px) translateY(20px); opacity: 0.6; }
+to { transform: translateX(30px) translateY(-20px); opacity: 1; }
+}
+body[data-era=“4”] .stars::before {
+content: ‘’; position: fixed; inset: 0; pointer-events: none;
+background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(255,90,200,0.1) 70%, transparent 100%);
+animation: pulseRing 6s ease-in-out infinite;
+}
+@keyframes pulseRing { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 0.7; transform: scale(1.2); } }
+@keyframes drift {
+from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; }
+to   { background-position: -400px 400px, 400px -400px, -200px 200px, 200px -200px, -100px 100px, 100px -100px, -150px 150px, 150px -150px, -250px 250px, 250px -250px, -300px 300px, 300px -300px, -180px 180px, 180px -180px, -220px 220px, 220px -220px, 0 0, 0 0, 0 0; }
+}
+.scan {
+position: fixed; inset: 0; z-index: 1; pointer-events: none;
+background: repeating-linear-gradient(0deg, rgba(110,240,255,0.06) 0 2px, transparent 2px 4px);
+mix-blend-mode: screen;
+}
+/* era tint overlay */
+.era-overlay {
+position: fixed; inset: 0; z-index: 1; pointer-events: none;
+background: var(–era-tint);
+transition: background 1.5s ease;
+}
+
+#app {
+position: relative; z-index: 2;
+height: 100dvh; display: flex; flex-direction: column;
+max-width: 540px; margin: 0 auto;
+padding: 6px 6px 0;
+}
+
+header {
+flex: 0 0 auto;
+border: 1px solid var(–panel-edge);
+background: var(–panel);
+backdrop-filter: blur(6px);
+-webkit-backdrop-filter: blur(6px);
+padding: 6px 10px 8px;
+position: relative;
+}
+header::before {
+content: ‘’; position: absolute; top: -1px; left: 12px; right: 12px; height: 1px;
+background: linear-gradient(90deg, transparent, var(–cyan), transparent);
+}
+.title {
+font-family: ‘Major Mono Display’, monospace;
+font-size: 14px; letter-spacing: 0.18em; color: var(–cyan);
+text-shadow: 0 0 8px rgba(110, 240, 255, 0.5);
+display: flex; justify-content: space-between; align-items: baseline;
+}
+.title .tier { font-size: 9px; color: var(–magenta); letter-spacing: 0.2em; }
+body[data-era=“1”] .title { color: var(–green); text-shadow: 0 0 8px rgba(125,255,176,0.5); }
+body[data-era=“2”] .title { color: var(–gold); text-shadow: 0 0 8px rgba(255,215,106,0.5); }
+body[data-era=“3”] .title { color: var(–violet); text-shadow: 0 0 8px rgba(180,138,255,0.5); }
+body[data-era=“4”] .title { color: var(–magenta); text-shadow: 0 0 12px rgba(255,90,200,0.7); }
+
+.res-grid {
+display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px 10px;
+margin-top: 4px; font-size: 10px;
+}
+.res-grid .row { display: flex; justify-content: space-between; align-items: baseline; }
+.res-grid .label { color: var(–ink-dim); letter-spacing: 0.1em; font-size: 9px; }
+.res-grid .val { font-weight: 600; }
+.v-ore { color: var(–cyan); text-shadow: 0 0 6px rgba(110,240,255,0.5); }
+.v-crys { color: var(–magenta); text-shadow: 0 0 6px rgba(255,90,200,0.5); }
+.v-sing { color: var(–gold); text-shadow: 0 0 6px rgba(255,215,106,0.5); }
+.v-dm { color: var(–violet); text-shadow: 0 0 6px rgba(180,138,255,0.5); }
+.v-scrap { color: var(–orange); text-shadow: 0 0 6px rgba(255,159,90,0.5); }
+.rate { font-size: 9px; color: var(–ink-dim); }
+
+/* CORE — gets more rings as era progresses */
+.core {
+flex: 0 0 auto;
+margin: 6px 0;
+height: 105px;
+position: relative;
+display: flex; align-items: center; justify-content: center;
+border: 1px solid var(–panel-edge);
+background: radial-gradient(circle at 50% 50%, rgba(110,240,255,0.12), transparent 60%), var(–panel);
+overflow: hidden; cursor: pointer;
+box-shadow: inset 0 0 30px rgba(110, 240, 255, 0.04);
+transition: height 0.3s ease;
+}
+.core.combat-mode {
+height: 140px;
+padding-bottom: 28px;
+}
+.core::before {
+content: ‘’; position: absolute; inset: -2px;
+background: conic-gradient(from 0deg, transparent, rgba(110,240,255,0.4), transparent 30%);
+animation: spin 8s linear infinite;
+}
+/* era 2+ adds counter-rotating outer ring */
+body[data-era=“2”] .core::after,
+body[data-era=“3”] .core::after,
+body[data-era=“4”] .core::after {
+content: ‘’; position: absolute; inset: 6px;
+border: 1px dashed rgba(255,215,106,0.18); border-radius: 50%;
+animation: spinReverse 14s linear infinite;
+pointer-events: none;
+}
+body[data-era=“3”] .core,
+body[data-era=“4”] .core {
+box-shadow: inset 0 0 30px rgba(180,138,255,0.15);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spinReverse { to { transform: rotate(-360deg); } }
+
+.core-inner {
+position: relative; z-index: 2;
+width: 70px; height: 70px; border-radius: 50%;
+background: radial-gradient(circle at 35% 35%, #aff5ff, #6ef0ff 30%, #1a4a6a 70%, #08151f);
+box-shadow: 0 0 30px rgba(110,240,255,0.5), inset 0 0 20px rgba(255,255,255,0.3), inset -10px -10px 20px rgba(0,0,0,0.4);
+transition: transform 0.08s ease;
+}
+/* core absorbs era color */
+body[data-era=“2”] .core-inner { box-shadow: 0 0 30px rgba(255,215,106,0.4), inset 0 0 20px rgba(255,255,255,0.3), inset -10px -10px 20px rgba(0,0,0,0.4); }
+body[data-era=“3”] .core-inner {
+background: radial-gradient(circle at 35% 35%, #d8c0ff, #b48aff 30%, #4a2a6a 70%, #1f0f2f);
+box-shadow: 0 0 35px rgba(180,138,255,0.6), inset 0 0 20px rgba(255,255,255,0.3), inset -10px -10px 20px rgba(0,0,0,0.4);
+}
+body[data-era=“4”] .core-inner {
+background: radial-gradient(circle at 35% 35%, #ffd0f0, #ff5ac8 30%, #6a1a4a 70%, #2f0820);
+box-shadow: 0 0 40px rgba(255,90,200,0.7), inset 0 0 20px rgba(255,255,255,0.3), inset -10px -10px 20px rgba(0,0,0,0.4);
+animation: corePulse 3s ease-in-out infinite;
+}
+@keyframes corePulse {
+0%,100% { transform: scale(1); }
+50% { transform: scale(1.05); }
+}
+.core:active .core-inner { transform: scale(0.92) !important; }
+.core-label { position: absolute; bottom: 5px; left: 10px; font-size: 8px; color: var(–ink-dim); letter-spacing: 0.2em; z-index: 2; }
+.core-tap-power { position: absolute; top: 5px; right: 10px; font-size: 8px; color: var(–cyan); letter-spacing: 0.1em; z-index: 2; }
+.core.combat-mode .core-label { display: none; }
+.core.combat-mode .core-tap-power { display: none; }
+.core-mode-toggle {
+position: absolute; top: 5px; left: 10px;
+font-size: 8px; letter-spacing: 0.15em; padding: 2px 6px;
+border: 1px solid var(–panel-edge); cursor: pointer;
+color: var(–ink-dim); background: rgba(0,0,0,0.3); z-index: 4;
+}
+.core-mode-toggle.combat { color: var(–crimson); border-color: var(–crimson); }
+
+.core.combat-mode .core-inner {
+background: radial-gradient(circle at 35% 35%, #ffaaaa, #ff5e6c 30%, #6a1a1a 70%, #1f0808) !important;
+box-shadow: 0 0 30px rgba(255,94,108,0.5), inset 0 0 20px rgba(255,255,255,0.3), inset -10px -10px 20px rgba(0,0,0,0.4) !important;
+}
+.core.boss-fight .core-inner {
+background: radial-gradient(circle at 35% 35%, #ffe0aa, #ffd76a 30%, #6a4a1a 70%, #2f1f08) !important;
+box-shadow: 0 0 50px rgba(255,215,106,0.8), inset 0 0 25px rgba(255,255,255,0.4) !important;
+animation: bossThrob 1.2s ease-in-out infinite !important;
+}
+@keyframes bossThrob {
+0%,100% { transform: scale(1); }
+50% { transform: scale(1.08); }
+}
+.core.anomaly-fight .core-inner {
+background: radial-gradient(circle at 35% 35%, #d8c0ff, #b48aff 30%, #4a2a6a 70%, #1f0f2f) !important;
+box-shadow: 0 0 40px rgba(180,138,255,0.7), inset 0 0 25px rgba(255,255,255,0.3) !important;
+animation: anomalyThrob 1.5s ease-in-out infinite !important;
+}
+@keyframes anomalyThrob {
+0%,100% { transform: scale(1) rotate(0deg); }
+25% { transform: scale(1.05) rotate(2deg); }
+50% { transform: scale(1.08) rotate(0deg); }
+75% { transform: scale(1.05) rotate(-2deg); }
+}
+
+.enemy-info {
+position: absolute; inset: 4px 10px auto 80px; z-index: 3;
+display: flex; justify-content: space-between; align-items: baseline;
+}
+.enemy-name { font-size: 11px; color: var(–crimson); letter-spacing: 0.1em; font-weight: 600; text-shadow: 0 0 6px rgba(255,94,108,0.5); }
+.enemy-name.boss { color: var(–gold); text-shadow: 0 0 8px rgba(255,215,106,0.6); }
+.enemy-name.anomaly { color: var(–violet); text-shadow: 0 0 8px rgba(180,138,255,0.7); }
+.enemy-tier { font-size: 9px; color: var(–ink-dim); }
+
+/* HP bar — full bottom strip, separated from orb */
+.hp-bar {
+position: absolute; bottom: 8px; left: 10px; right: 10px; z-index: 3;
+height: 16px; background: rgba(0, 0, 0, 0.55);
+border: 1px solid rgba(255,94,108,0.55);
+box-shadow: 0 0 8px rgba(255,94,108,0.25), inset 0 0 6px rgba(0,0,0,0.6);
+overflow: hidden;
+}
+.hp-fill {
+height: 100%;
+background: linear-gradient(180deg, #ff8d8d 0%, var(–crimson) 50%, #b13441 100%);
+transition: width 0.15s ease;
+box-shadow: 0 0 12px rgba(255,94,108,0.7), inset 0 1px 0 rgba(255,255,255,0.3);
+position: relative;
+}
+.hp-fill::after {
+content: ‘’; position: absolute; inset: 0;
+background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(255,255,255,0.08) 6px 7px);
+}
+.core.boss-fight .hp-bar { border-color: rgba(255,215,106,0.7); box-shadow: 0 0 14px rgba(255,215,106,0.4), inset 0 0 6px rgba(0,0,0,0.6); }
+.core.boss-fight .hp-fill { background: linear-gradient(180deg, #ffe9a8 0%, var(–gold) 50%, #c89730 100%); box-shadow: 0 0 14px rgba(255,215,106,0.8), inset 0 1px 0 rgba(255,255,255,0.3); }
+.core.anomaly-fight .hp-bar { border-color: rgba(180,138,255,0.7); box-shadow: 0 0 14px rgba(180,138,255,0.4), inset 0 0 6px rgba(0,0,0,0.6); }
+.core.anomaly-fight .hp-fill { background: linear-gradient(180deg, #d8c0ff 0%, var(–violet) 50%, #6e4eb8 100%); box-shadow: 0 0 14px rgba(180,138,255,0.8), inset 0 1px 0 rgba(255,255,255,0.3); }
+.hp-text {
+position: absolute; bottom: 9px; left: 0; right: 0; z-index: 4;
+font-size: 10px; color: #fff; letter-spacing: 0.08em; font-weight: 700;
+text-align: center; pointer-events: none;
+text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.9);
+}
+.dps-text {
+position: absolute; bottom: 28px; right: 10px; z-index: 3;
+font-size: 9px; color: var(–orange); letter-spacing: 0.1em; font-weight: 600;
+text-shadow: 0 0 6px rgba(255,159,90,0.6);
+}
+.float {
+position: absolute; pointer-events: none;
+font-size: 12px; font-weight: 600; text-shadow: 0 0 8px currentColor;
+animation: floatUp 0.9s ease-out forwards; z-index: 5; color: var(–cyan);
+}
+.float.dmg { color: var(–orange); }
+.float.crit { color: var(–gold); font-size: 18px; animation: floatUpCrit 1s ease-out forwards; font-weight: 700; }
+@keyframes floatUp {
+0% { transform: translate(-50%, 0); opacity: 1; }
+100% { transform: translate(-50%, -60px); opacity: 0; }
+}
+@keyframes floatUpCrit {
+0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+20% { transform: translate(-50%, -10px) scale(1.4); opacity: 1; }
+100% { transform: translate(-50%, -80px) scale(1); opacity: 0; }
+}
+.core.hurt { animation: coreShake 0.25s; }
+@keyframes coreShake {
+0%, 100% { transform: translate(0,0); }
+20% { transform: translate(-4px, 2px); } 40% { transform: translate(4px, -1px); }
+60% { transform: translate(-3px, 3px); } 80% { transform: translate(3px, -2px); }
+}
+
+/* Boss entrance — full-screen takeover */
+.boss-entrance {
+position: fixed; inset: 0; z-index: 150; pointer-events: none;
+display: flex; align-items: center; justify-content: center;
+opacity: 0; transition: opacity 0.4s;
+background: radial-gradient(circle, rgba(255,215,106,0.0) 30%, rgba(0,0,0,0.7) 100%);
+}
+.boss-entrance.active { opacity: 1; animation: entranceBg 2.5s forwards; }
+@keyframes entranceBg {
+0% { opacity: 0; }
+20% { opacity: 1; }
+80% { opacity: 1; }
+100% { opacity: 0; }
+}
+.boss-entrance .be-name {
+font-family: ‘Major Mono Display’, monospace;
+color: var(–gold); font-size: 32px; letter-spacing: 0.3em;
+text-shadow: 0 0 20px rgba(255,215,106,1), 0 0 40px rgba(255,215,106,0.6);
+animation: nameSlam 2.5s forwards;
+text-align: center;
+}
+.boss-entrance.anomaly .be-name { color: var(–violet); text-shadow: 0 0 20px rgba(180,138,255,1), 0 0 40px rgba(180,138,255,0.6); }
+@keyframes nameSlam {
+0% { transform: scale(0.3) rotate(-5deg); opacity: 0; }
+15% { transform: scale(1.3) rotate(2deg); opacity: 1; }
+25% { transform: scale(1) rotate(0deg); }
+75% { transform: scale(1) rotate(0deg); opacity: 1; }
+100% { transform: scale(1.5) rotate(0deg); opacity: 0; }
+}
+.boss-entrance .be-sub {
+position: absolute; bottom: 30%; left: 0; right: 0;
+text-align: center; font-size: 11px; color: var(–ink-dim); letter-spacing: 0.4em;
+animation: subFade 2.5s forwards;
+}
+@keyframes subFade { 0%,30% { opacity: 0; } 50% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.boss-entrance .scan-lines {
+position: absolute; inset: 0;
+background: repeating-linear-gradient(0deg, rgba(255,215,106,0.05) 0 3px, transparent 3px 6px);
+animation: scanMove 2.5s linear forwards;
+}
+.boss-entrance.anomaly .scan-lines { background: repeating-linear-gradient(0deg, rgba(180,138,255,0.05) 0 3px, transparent 3px 6px); }
+@keyframes scanMove { from { transform: translateY(-20px); } to { transform: translateY(20px); } }
+
+/* TABS */
+.tabs-wrap {
+flex: 0 0 auto; overflow-x: auto; overflow-y: hidden;
+scrollbar-width: none; margin-bottom: 6px;
+}
+.tabs-wrap::-webkit-scrollbar { display: none; }
+.tabs { display: flex; gap: 3px; min-width: max-content; }
+.tab {
+background: var(–panel);
+border: 1px solid var(–panel-edge);
+color: var(–ink);
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 9px; letter-spacing: 0.12em;
+padding: 8px 11px; cursor: pointer;
+transition: all 0.15s; text-transform: uppercase;
+white-space: nowrap; flex-shrink: 0;
+font-weight: 600;
+}
+.tab.active {
+color: var(–bg); background: var(–cyan); border-color: var(–cyan);
+box-shadow: 0 0 14px rgba(110,240,255,0.6), inset 0 0 8px rgba(255,255,255,0.3);
+text-shadow: none;
+}
+.tab.combat.active { background: var(–crimson); border-color: var(–crimson); box-shadow: 0 0 14px rgba(255,94,108,0.6), inset 0 0 8px rgba(255,255,255,0.3); }
+.tab.expedition.active { background: var(–green); border-color: var(–green); box-shadow: 0 0 14px rgba(125,255,176,0.6), inset 0 0 8px rgba(255,255,255,0.3); }
+.tab.research.active { background: var(–gold); border-color: var(–gold); box-shadow: 0 0 14px rgba(255,215,106,0.6), inset 0 0 8px rgba(255,255,255,0.3); }
+.tab.anomaly.active { background: var(–violet); border-color: var(–violet); box-shadow: 0 0 14px rgba(180,138,255,0.6), inset 0 0 8px rgba(255,255,255,0.3); }
+.tab .badge {
+display: inline-block; min-width: 12px; padding: 0 3px;
+background: var(–magenta); color: #fff; font-size: 8px;
+border-radius: 2px; margin-left: 2px;
+}
+.tab.locked { opacity: 0.3; cursor: not-allowed; }
+.tab .badge.violet { background: var(–violet); animation: badgePulse 1.2s infinite; }
+.tab .badge.green { background: var(–green); color: #000; }
+@keyframes badgePulse { 0%,100% { opacity: 1; box-shadow: 0 0 8px var(–violet); } 50% { opacity: 0.7; } }
+
+.panel {
+flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
+border: 1px solid var(–panel-edge);
+background: var(–panel);
+padding: 10px;
+margin-bottom: 6px;
+scrollbar-width: thin;
+scrollbar-color: var(–cyan-dim) transparent;
+box-shadow: inset 0 0 30px rgba(110, 240, 255, 0.04), 0 0 12px rgba(110, 240, 255, 0.05);
+}
+.panel::-webkit-scrollbar { width: 4px; }
+.panel::-webkit-scrollbar-thumb { background: var(–cyan-dim); }
+
+.section-title {
+font-family: ‘Major Mono Display’, monospace;
+font-size: 11px; letter-spacing: 0.2em;
+color: var(–cyan); margin-bottom: 10px; padding-bottom: 6px;
+border-bottom: 1px dashed rgba(110,240,255,0.4);
+display: flex; justify-content: space-between;
+text-shadow: 0 0 8px rgba(110,240,255,0.4);
+}
+.section-title.combat { color: var(–crimson); border-color: rgba(255,94,108,0.45); text-shadow: 0 0 8px rgba(255,94,108,0.4); }
+.section-title.exp { color: var(–green); border-color: rgba(125,255,176,0.45); text-shadow: 0 0 8px rgba(125,255,176,0.4); }
+.section-title.research { color: var(–gold); border-color: rgba(255,215,106,0.45); text-shadow: 0 0 8px rgba(255,215,106,0.4); }
+.section-title.anomaly { color: var(–violet); border-color: rgba(180,138,255,0.45); text-shadow: 0 0 8px rgba(180,138,255,0.4); }
+.section-title .sub { color: var(–ink-dim); font-size: 10px; letter-spacing: 0.1em; text-shadow: none; }
+
+.item {
+border: 1px solid rgba(110,240,255,0.28);
+background: linear-gradient(180deg, rgba(110,240,255,0.10) 0%, rgba(110,240,255,0.02) 100%);
+padding: 8px 10px; margin-bottom: 6px;
+display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+cursor: pointer; transition: all 0.15s;
+box-shadow: inset 0 1px 0 rgba(110,240,255,0.05);
+}
+.item.weapon {
+border-color: rgba(255,159,90,0.32);
+background: linear-gradient(180deg, rgba(255,159,90,0.10) 0%, rgba(255,159,90,0.02) 100%);
+}
+.item:active { transform: scale(0.99); }
+.item.affordable {
+border-color: rgba(110,240,255,0.65);
+box-shadow: 0 0 10px rgba(110,240,255,0.15), inset 0 1px 0 rgba(110,240,255,0.1);
+}
+.item.weapon.affordable {
+border-color: rgba(255,159,90,0.7);
+box-shadow: 0 0 10px rgba(255,159,90,0.18), inset 0 1px 0 rgba(255,159,90,0.1);
+}
+.item.cant { opacity: 0.55; }
+.item .name { font-weight: 600; font-size: 12px; letter-spacing: 0.05em; }
+.item.weapon .name { color: var(–orange); }
+.item .desc { font-size: 10px; color: var(–ink-dim); margin-top: 2px; }
+.item .qty { color: var(–gold); font-size: 10px; margin-top: 2px; }
+.item .buy { text-align: right; font-size: 11px; }
+.item .buy .cost { color: var(–cyan); font-weight: 600; font-size: 11px; }
+.item.weapon .buy .cost { color: var(–orange); }
+.item.cant .buy .cost { color: var(–bad); }
+.item .buy .label { color: var(–ink-dim); font-size: 8px; letter-spacing: 0.15em; }
+
+/* PRESTIGE */
+.prestige-box {
+border: 1px solid var(–panel-edge); padding: 12px; margin-bottom: 10px; position: relative;
+}
+.prestige-box.refine {
+border-color: rgba(255,90,200,0.55);
+background: linear-gradient(180deg, rgba(255,90,200,0.14) 0%, rgba(255,90,200,0.02) 100%);
+box-shadow: 0 0 14px rgba(255,90,200,0.1), inset 0 1px 0 rgba(255,90,200,0.1);
+}
+.prestige-box.warp {
+border-color: rgba(255,215,106,0.55);
+background: linear-gradient(180deg, rgba(255,215,106,0.14) 0%, rgba(255,215,106,0.02) 100%);
+box-shadow: 0 0 14px rgba(255,215,106,0.1), inset 0 1px 0 rgba(255,215,106,0.1);
+}
+.prestige-box.ascend {
+border-color: rgba(180,138,255,0.55);
+background: linear-gradient(180deg, rgba(180,138,255,0.14) 0%, rgba(180,138,255,0.02) 100%);
+box-shadow: 0 0 14px rgba(180,138,255,0.1), inset 0 1px 0 rgba(180,138,255,0.1);
+}
+.prestige-box h3 { font-family: ‘Major Mono Display’, monospace; font-size: 12px; letter-spacing: 0.2em; margin-bottom: 6px; }
+.prestige-box.refine h3 { color: var(–magenta); text-shadow: 0 0 10px rgba(255,90,200,0.6); }
+.prestige-box.warp h3 { color: var(–gold); text-shadow: 0 0 10px rgba(255,215,106,0.6); }
+.prestige-box.ascend h3 { color: var(–violet); text-shadow: 0 0 10px rgba(180,138,255,0.6); }
+.prestige-box p { font-size: 10px; color: var(–ink-dim); margin-bottom: 8px; line-height: 1.5; }
+.prestige-box .gain { font-size: 11px; margin-bottom: 8px; }
+.prestige-box .gain b { font-size: 16px; }
+.prestige-box .gate {
+background: rgba(255,94,108,0.15); border: 1px dashed rgba(255,94,108,0.55); color: var(–crimson);
+padding: 6px 9px; margin-bottom: 8px; font-size: 10px; letter-spacing: 0.1em;
+text-shadow: 0 0 6px rgba(255,94,108,0.4);
+}
+.prestige-box .gate.cleared {
+background: rgba(125,255,176,0.13); border-color: rgba(125,255,176,0.55); color: var(–ok);
+text-shadow: 0 0 6px rgba(125,255,176,0.5);
+}
+.prestige-box .auto-status {
+background: rgba(125,255,176,0.10); border: 1px solid rgba(125,255,176,0.4); color: var(–green);
+padding: 6px 9px; margin-bottom: 6px; font-size: 10px; letter-spacing: 0.1em;
+display: flex; justify-content: space-between; align-items: center;
+}
+
+.btn {
+width: 100%; padding: 9px; cursor: pointer;
+font-family: ‘JetBrains Mono’, monospace; font-size: 11px; letter-spacing: 0.2em;
+background: transparent; color: var(–ink); border: 1px solid var(–ink-dim);
+text-transform: uppercase; transition: all 0.15s;
+}
+.btn.go.refine { border-color: var(–magenta); color: var(–magenta); }
+.btn.go.refine:hover:not(:disabled) { background: var(–magenta); color: var(–bg); box-shadow: 0 0 16px rgba(255,90,200,0.5); }
+.btn.go.warp { border-color: var(–gold); color: var(–gold); }
+.btn.go.warp:hover:not(:disabled) { background: var(–gold); color: var(–bg); box-shadow: 0 0 16px rgba(255,215,106,0.5); }
+.btn.go.ascend { border-color: var(–violet); color: var(–violet); }
+.btn.go.ascend:hover:not(:disabled) { background: var(–violet); color: var(–bg); box-shadow: 0 0 16px rgba(180,138,255,0.5); }
+.btn.go.combat { border-color: var(–crimson); color: var(–crimson); }
+.btn.go.combat:hover:not(:disabled) { background: var(–crimson); color: var(–bg); box-shadow: 0 0 16px rgba(255,94,108,0.5); }
+.btn.go.green { border-color: var(–green); color: var(–green); }
+.btn.go.green:hover:not(:disabled) { background: var(–green); color: var(–bg); box-shadow: 0 0 16px rgba(125,255,176,0.5); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.small { padding: 5px 10px; font-size: 9px; width: auto; }
+
+/* META — era cards */
+.era-card {
+border: 2px solid var(–panel-edge);
+padding: 12px; margin-bottom: 10px; position: relative;
+overflow: hidden;
+}
+.era-card.unlocked {
+border-color: var(–violet);
+background:
+linear-gradient(180deg, rgba(180,138,255,0.10), rgba(180,138,255,0.02)),
+repeating-linear-gradient(45deg, rgba(180,138,255,0.04) 0 2px, transparent 2px 8px);
+}
+.era-card.active-era {
+border-color: var(–gold);
+background: linear-gradient(180deg, rgba(255,215,106,0.10), transparent);
+box-shadow: 0 0 16px rgba(255,215,106,0.2);
+animation: eraGlow 3s ease-in-out infinite;
+}
+@keyframes eraGlow {
+0%,100% { box-shadow: 0 0 12px rgba(255,215,106,0.15); }
+50% { box-shadow: 0 0 24px rgba(255,215,106,0.35); }
+}
+.era-card.locked { opacity: 0.5; }
+.era-card h3 {
+font-family: ‘Major Mono Display’, monospace; font-size: 12px; letter-spacing: 0.2em;
+color: var(–violet); margin-bottom: 4px;
+}
+.era-card.locked h3 { color: var(–ink-dim); }
+.era-card.active-era h3 { color: var(–gold); }
+.era-card .desc { font-size: 10px; color: var(–ink-dim); margin-bottom: 8px; line-height: 1.5; }
+.era-card .feature-list { font-size: 10px; color: var(–green); margin-bottom: 8px; line-height: 1.7; }
+.era-card .feature-list .ft { display: block; margin-left: 8px; }
+.era-card .cost-line { font-size: 10px; margin-bottom: 6px; }
+.era-card .era-num {
+position: absolute; top: 8px; right: 12px;
+font-family: ‘Major Mono Display’, monospace;
+font-size: 36px; opacity: 0.1; line-height: 1;
+color: var(–violet);
+}
+.era-card.active-era .era-num { color: var(–gold); opacity: 0.18; }
+
+/* TOAST */
+#toast {
+position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+background: var(–bg-2); border: 1px solid var(–cyan); color: var(–cyan);
+padding: 10px 18px; font-size: 11px; letter-spacing: 0.15em; z-index: 100;
+box-shadow: 0 0 20px rgba(110,240,255,0.3);
+opacity: 0; pointer-events: none; transition: opacity 0.3s; text-transform: uppercase;
+max-width: 90vw; text-align: center;
+}
+#toast.show { opacity: 1; }
+#toast.bad { border-color: var(–crimson); color: var(–crimson); }
+#toast.gold { border-color: var(–gold); color: var(–gold); }
+#toast.green { border-color: var(–green); color: var(–green); }
+#toast.violet { border-color: var(–violet); color: var(–violet); box-shadow: 0 0 20px rgba(180,138,255,0.4); }
+
+footer {
+flex: 0 0 auto;
+display: flex; justify-content: space-between; align-items: center;
+padding: 4px 4px 6px;
+font-size: 9px; color: var(–ink-dim); letter-spacing: 0.15em;
+}
+footer button {
+background: transparent; border: 1px solid var(–ink-dim);
+color: var(–ink-dim); padding: 4px 8px; font-size: 9px;
+font-family: inherit; letter-spacing: 0.15em; cursor: pointer; text-transform: uppercase;
+}
+footer button:hover { color: var(–bad); border-color: var(–bad); }
+
+/* MODALS */
+.modal-bg {
+position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200;
+display: flex; align-items: center; justify-content: center;
+backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 20px;
+animation: modalFadeIn 0.3s ease-out;
+}
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+border: 1px solid var(–cyan); background: var(–bg-2);
+padding: 20px; max-width: 380px; width: 100%; text-align: center;
+animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalSlideIn { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.modal h2 { font-family: ‘Major Mono Display’, monospace; color: var(–cyan); font-size: 14px; letter-spacing: 0.2em; margin-bottom: 10px; }
+.modal.boss h2 { color: var(–gold); }
+.modal.victory h2 { color: var(–ok); }
+.modal.era h2 { color: var(–violet); }
+.modal.anomaly h2 { color: var(–violet); }
+.modal p { font-size: 11px; color: var(–ink-dim); margin-bottom: 8px; line-height: 1.6; }
+.modal .reward { font-size: 16px; color: var(–cyan); margin: 12px 0; }
+.modal.boss .reward, .modal.victory .reward { color: var(–gold); }
+.modal.anomaly { border-color: var(–violet); }
+.modal.era {
+border-color: var(–violet);
+background:
+linear-gradient(180deg, var(–bg-2), rgba(20, 10, 40, 0.95)),
+radial-gradient(circle at 50% 0%, rgba(180,138,255,0.25), transparent 60%);
+}
+.modal.era .era-num-big {
+font-family: ‘Major Mono Display’, monospace;
+font-size: 64px; color: var(–violet);
+text-shadow: 0 0 30px rgba(180,138,255,0.7);
+margin: 10px 0;
+animation: eraNumberGlow 2s ease-in-out infinite alternate;
+}
+@keyframes eraNumberGlow {
+from { text-shadow: 0 0 20px rgba(180,138,255,0.5); }
+to { text-shadow: 0 0 50px rgba(180,138,255,1), 0 0 80px rgba(180,138,255,0.4); }
+}
+.modal.era .feature-block {
+text-align: left; line-height: 1.9;
+padding: 12px; margin: 14px 0;
+border: 1px dashed rgba(180,138,255,0.4);
+background: rgba(180,138,255,0.04);
+font-size: 11px; color: var(–green);
+}
+
+/* unlocks */
+.unlock {
+border: 1px solid rgba(125,255,176,0.2); background: rgba(125,255,176,0.04);
+padding: 5px 10px; margin-bottom: 4px;
+font-size: 10px; color: var(–ok); letter-spacing: 0.1em;
+display: flex; justify-content: space-between;
+}
+.unlock.locked { border-color: rgba(255,94,108,0.2); background: rgba(255,94,108,0.04); color: var(–ink-dim); }
+.unlock.violet { border-color: rgba(180,138,255,0.3); background: rgba(180,138,255,0.06); color: var(–violet); }
+
+/* EXPEDITIONS */
+.expedition-card {
+border: 1px solid rgba(125,255,176,0.25);
+background: linear-gradient(180deg, rgba(125,255,176,0.04), transparent);
+padding: 10px; margin-bottom: 8px; position: relative; overflow: hidden;
+}
+.expedition-card .ex-name { font-size: 12px; color: var(–green); letter-spacing: 0.1em; font-weight: 600; }
+.expedition-card .ex-icon {
+position: absolute; top: 8px; right: 10px;
+font-size: 24px; opacity: 0.25; line-height: 1;
+font-family: ‘Major Mono Display’, monospace; color: var(–green);
+}
+.expedition-card .ex-desc { font-size: 10px; color: var(–ink-dim); margin: 3px 0 6px; }
+.expedition-card .ex-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; margin-top: 4px; }
+.ex-progress {
+height: 4px; background: rgba(125,255,176,0.15); border: 1px solid rgba(125,255,176,0.3);
+margin: 6px 0;
+}
+.ex-progress-fill {
+height: 100%; background: var(–green); transition: width 0.3s ease;
+box-shadow: 0 0 6px rgba(125,255,176,0.5);
+}
+.ex-active { border-color: var(–green); box-shadow: 0 0 10px rgba(125,255,176,0.15); }
+
+/* RESEARCH */
+.research-grid {
+display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+position: relative;
+}
+.research-node {
+border: 1px solid rgba(255,215,106,0.18);
+background: linear-gradient(180deg, rgba(255,215,106,0.04), transparent);
+padding: 8px 6px; cursor: pointer; transition: all 0.15s;
+position: relative; min-height: 78px;
+display: flex; flex-direction: column; justify-content: space-between;
+}
+.research-node.purchased {
+border-color: var(–gold);
+background: linear-gradient(180deg, rgba(255,215,106,0.18), transparent);
+box-shadow: 0 0 8px rgba(255,215,106,0.2);
+}
+.research-node.affordable { border-color: rgba(255,215,106,0.7); }
+.research-node.affordable:hover { background: rgba(255,215,106,0.12); }
+.research-node.locked { opacity: 0.4; cursor: not-allowed; }
+.research-node .rn-name { font-size: 9px; font-weight: 600; color: var(–gold); letter-spacing: 0.05em; }
+.research-node.purchased .rn-name::before { content: ’◆ ’; color: var(–gold); }
+.research-node .rn-desc { font-size: 8px; color: var(–ink-dim); margin-top: 3px; line-height: 1.3; }
+.research-node .rn-cost { font-size: 9px; color: var(–gold); margin-top: 4px; }
+.research-node.purchased .rn-cost { color: var(–green); }
+.research-tree-col {
+font-family: ‘Major Mono Display’, monospace; font-size: 10px; letter-spacing: 0.15em;
+color: var(–gold); margin-bottom: 6px; text-align: center; padding-bottom: 2px;
+border-bottom: 1px dashed rgba(255,215,106,0.2);
+}
+
+/* ANOMALIES — distinct visuals per type */
+.anomaly-card {
+border: 1px solid rgba(180,138,255,0.5);
+padding: 14px 12px; margin-bottom: 10px; position: relative;
+overflow: hidden;
+box-shadow: 0 0 24px rgba(180,138,255,0.15);
+animation: anomalyArrival 0.6s ease-out;
+}
+@keyframes anomalyArrival {
+from { transform: scale(0.95); opacity: 0; }
+to { transform: scale(1); opacity: 1; }
+}
+.anomaly-card[data-type=“flare”] {
+background:
+linear-gradient(180deg, rgba(255,159,90,0.12), transparent 70%),
+radial-gradient(circle at 30% 30%, rgba(255,159,90,0.18), transparent 60%);
+border-color: var(–orange);
+}
+.anomaly-card[data-type=“flare”] .a-name { color: var(–orange); }
+.anomaly-card[data-type=“storm”] {
+background:
+linear-gradient(180deg, rgba(110,240,255,0.10), transparent 70%),
+radial-gradient(circle at 70% 30%, rgba(180,138,255,0.20), transparent 60%);
+border-color: var(–cyan);
+}
+.anomaly-card[data-type=“storm”] .a-name { color: var(–cyan); }
+.anomaly-card[data-type=“rift”] {
+background:
+linear-gradient(180deg, rgba(125,255,176,0.10), transparent 70%),
+radial-gradient(ellipse at 50% 30%, rgba(125,255,176,0.18), transparent 70%);
+border-color: var(–green);
+}
+.anomaly-card[data-type=“rift”] .a-name { color: var(–green); }
+.anomaly-card[data-type=“cache”] {
+background:
+linear-gradient(180deg, rgba(255,215,106,0.10), transparent 70%),
+radial-gradient(circle at 50% 60%, rgba(255,215,106,0.18), transparent 60%);
+border-color: var(–gold);
+}
+.anomaly-card[data-type=“cache”] .a-name { color: var(–gold); }
+.anomaly-card .a-icon {
+position: absolute; top: 8px; right: 14px;
+font-family: ‘Major Mono Display’, monospace; font-size: 36px;
+opacity: 0.18; line-height: 1;
+}
+.anomaly-card .a-name { font-family: ‘Major Mono Display’, monospace; font-size: 13px; letter-spacing: 0.2em; }
+.anomaly-card .a-timer { font-size: 10px; color: var(–bad); letter-spacing: 0.1em; font-weight: 600; }
+.anomaly-card .a-desc { font-size: 11px; color: var(–ink); margin: 8px 0; line-height: 1.5; }
+.anomaly-card .a-choice { display: flex; gap: 6px; margin-top: 8px; }
+
+/* radar empty state */
+.radar-empty {
+border: 1px dashed rgba(180,138,255,0.3);
+padding: 24px 12px; margin-bottom: 14px;
+text-align: center; color: var(–ink-dim);
+font-size: 10px; line-height: 1.8; letter-spacing: 0.1em;
+position: relative; overflow: hidden;
+}
+.radar-empty::before {
+content: ‘’; position: absolute; inset: 0;
+background: radial-gradient(circle at 50% 50%, rgba(180,138,255,0.05), transparent 60%);
+animation: radarSweep 4s linear infinite;
+}
+@keyframes radarSweep {
+0% { transform: rotate(0deg) scale(0.8); opacity: 0.4; }
+50% { opacity: 0.8; }
+100% { transform: rotate(360deg) scale(0.8); opacity: 0.4; }
+}
+.radar-empty span { position: relative; z-index: 1; }
+
+/* FORGE — modifier picker with categories */
+.forge-grid {
+display: grid; grid-template-columns: 1fr; gap: 6px;
+max-height: 50vh; overflow-y: auto;
+padding-right: 4px;
+}
+.modifier-card {
+border: 1px solid rgba(180,138,255,0.3); padding: 9px 10px;
+cursor: pointer; transition: all 0.18s;
+background: linear-gradient(180deg, rgba(180,138,255,0.04), transparent);
+position: relative; overflow: hidden;
+}
+.modifier-card:hover:not(.disabled) { border-color: rgba(180,138,255,0.6); background: rgba(180,138,255,0.08); }
+.modifier-card.selected {
+border-color: var(–violet);
+background: rgba(180,138,255,0.20);
+box-shadow: 0 0 12px rgba(180,138,255,0.4);
+}
+.modifier-card.selected::before {
+content: ‘◉’; position: absolute; top: 8px; right: 10px;
+color: var(–violet); font-size: 14px;
+}
+.modifier-card.disabled { opacity: 0.4; cursor: not-allowed; }
+.modifier-card .m-name { font-size: 11px; color: var(–violet); font-weight: 600; letter-spacing: 0.05em; }
+.modifier-card .m-tag {
+display: inline-block; font-size: 8px; padding: 1px 5px;
+border: 1px solid var(–ink-dim); color: var(–ink-dim);
+margin-left: 6px; letter-spacing: 0.1em;
+}
+.modifier-card .m-tag.offensive { border-color: var(–crimson); color: var(–crimson); }
+.modifier-card .m-tag.economic { border-color: var(–cyan); color: var(–cyan); }
+.modifier-card .m-tag.tradeoff { border-color: var(–orange); color: var(–orange); }
+.modifier-card .m-tag.utility { border-color: var(–green); color: var(–green); }
+.modifier-card .m-effect { font-size: 9px; color: var(–ink-dim); margin-top: 4px; line-height: 1.5; }
+
+/* AUTO-strategy chips */
+.strategy-chips { display: flex; gap: 4px; margin: 6px 0; flex-wrap: wrap; }
+.strategy-chip {
+padding: 4px 8px; font-size: 9px; letter-spacing: 0.1em; cursor: pointer;
+border: 1px solid var(–panel-edge); color: var(–ink-dim);
+background: rgba(0,0,0,0.2); transition: all 0.15s;
+}
+.strategy-chip.active { background: var(–green); color: var(–bg); border-color: var(–green); }
+
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.dot.green { background: var(–green); box-shadow: 0 0 6px var(–green); }
+.dot.red { background: var(–bad); }
+.dot.violet { background: var(–violet); box-shadow: 0 0 6px var(–violet); }
+
+.auto-toggle-row {
+border: 1px solid rgba(125,255,176,0.3);
+background: rgba(125,255,176,0.04);
+padding: 8px; margin-bottom: 8px;
+}
+.auto-toggle-row .row-top {
+display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;
+}
+</style>
+
+</head>
+<body data-era="0">
+<div class="stars"></div>
+<div class="scan"></div>
+<div class="era-overlay"></div>
+
+<div id="app">
+  <header>
+    <div class="title">
+      <span id="title-text">VOID MINERS</span>
+      <span class="tier" id="tier-text">// SECTOR 01 // ERA 0</span>
+    </div>
+    <div class="res-grid">
+      <div class="row"><span class="label">ORE</span><span class="val v-ore" id="ore">0</span></div>
+      <div class="row"><span class="label">CRYS</span><span class="val v-crys" id="crys">0</span></div>
+      <div class="row"><span class="label">SCRP</span><span class="val v-scrap" id="scrap">0</span></div>
+      <div class="row"><span class="label">/SEC</span><span class="rate" id="ops">0</span></div>
+      <div class="row"><span class="label">SING</span><span class="val v-sing" id="sing">0</span></div>
+      <div class="row"><span class="label">DM</span><span class="val v-dm" id="dm">0</span></div>
+    </div>
+  </header>
+
+  <div class="core" id="core">
+    <div class="core-mode-toggle" id="mode-toggle">/ MINE</div>
+    <div class="core-tap-power" id="tap-power">+1 / TAP</div>
+    <div class="core-label">// EXTRACTION CORE</div>
+    <div class="core-inner"></div>
+    <div class="enemy-info" id="enemy-info" style="display:none">
+      <span class="enemy-name" id="enemy-name">—</span>
+      <span class="enemy-tier" id="enemy-tier">—</span>
+    </div>
+    <div class="hp-bar" id="hp-bar" style="display:none"><div class="hp-fill" id="hp-fill" style="width:100%"></div></div>
+    <div class="hp-text" id="hp-text" style="display:none"></div>
+    <div class="dps-text" id="dps-text" style="display:none"></div>
+  </div>
+
+  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+  <div class="panel" id="panel"></div>
+
+  <footer>
+    <span id="status">// LINK STABLE</span>
+    <span style="display:flex;gap:4px">
+      <button id="mute-btn" title="Toggle ambient music">♪ ON</button>
+      <button id="export-btn" title="Copy save code to clipboard">EXPORT</button>
+      <button id="import-btn" title="Paste a save code">IMPORT</button>
+      <button id="reset-btn">RESET</button>
+    </span>
+  </footer>
+</div>
+
+<!-- Boss entrance overlay -->
+
+<div class="boss-entrance" id="boss-entrance">
+  <div class="scan-lines"></div>
+  <div class="be-name" id="be-name">⚠ BOSS ⚠</div>
+  <div class="be-sub" id="be-sub">// HOSTILE TARGET DETECTED</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+const SUFFIX = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+function fmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return '0';
+  if (n < 0) return '-' + fmt(-n);
+  if (n < 1000) return Number.isInteger(n) ? n.toString() : n.toFixed(1);
+  let i = 0;
+  while (n >= 1000 && i < SUFFIX.length - 1) { n /= 1000; i++; }
+  if (i >= SUFFIX.length - 1 && n >= 1000) return n.toExponential(2);
+  return n.toFixed(2) + SUFFIX[i];
+}
+function fmtTime(s) {
+  if (s < 60) return Math.floor(s) + 's';
+  if (s < 3600) return Math.floor(s/60) + 'm ' + Math.floor(s%60) + 's';
+  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
+}
+
+// ----- DATA -----
+const MINERS = [
+  { id: 'drone',   name: 'Scout Drone',     base: 15,        rate: 1.0,   growth: 1.12, desc: 'Tiny autonomous miner' },
+  { id: 'rig',     name: 'Drill Rig',       base: 100,       rate: 8,     growth: 1.13, desc: 'Mounted excavation' },
+  { id: 'hauler',  name: 'Ore Hauler',      base: 1100,      rate: 70,    growth: 1.14, desc: 'Hull-mounted scoops' },
+  { id: 'reactor', name: 'Plasma Reactor',  base: 12000,     rate: 500,   growth: 1.15, desc: 'Vaporizes asteroid cores' },
+  { id: 'forge',   name: 'Stellar Forge',   base: 130000,    rate: 4000,  growth: 1.16, desc: 'Forges raw matter' },
+  { id: 'rift',    name: 'Rift Excavator',  base: 1500000,   rate: 32000, growth: 1.17, desc: 'Pulls from subspace' }
+];
+const WEAPONS = [
+  { id: 'laser',   name: 'Pulse Laser',       base: 30,      dps: 2,      growth: 1.14, unlock: 'always',  desc: 'Cheap rapid-fire beam' },
+  { id: 'rail',    name: 'Rail Cannon',       base: 400,     dps: 25,     growth: 1.15, unlock: 'kills:5', desc: 'Heavy kinetic slug' },
+  { id: 'plasma',  name: 'Plasma Lance',      base: 6000,    dps: 220,    growth: 1.16, unlock: 'boss:1',  desc: 'Unlocked: Sector Warden' },
+  { id: 'missile', name: 'Swarm Missile',     base: 90000,   dps: 1800,   growth: 1.17, unlock: 'kills:30',desc: 'Homing micro-warheads' },
+  { id: 'beam',    name: 'Annihilation Beam', base: 1.4e6,   dps: 14000,  growth: 1.18, unlock: 'boss:2',  desc: 'Unlocked: Star Eater' },
+  { id: 'void',    name: 'Voidlance',         base: 2.2e7,   dps: 110000, growth: 1.19, unlock: 'boss:3',  desc: 'Unlocked: Void Sovereign' }
+];
+
+const STAGES = [
+  { id: 1, name: 'Asteroid Belt', enemies: [
+      { name: 'Husk Drone', hp: 40, reward: 8 },
+      { name: 'Scrap Pirate', hp: 200, reward: 30 },
+      { name: 'Mining Wraith', hp: 1200, reward: 150 }
+    ], boss: { name: 'SECTOR WARDEN', hp: 8000, reward: 800, gates: 'refine' }
+  },
+  { id: 2, name: 'Stellar Halo', enemies: [
+      { name: 'Photon Eel', hp: 15000, reward: 2200 },
+      { name: 'Flare Reaver', hp: 75000, reward: 11000 },
+      { name: 'Solar Hydra', hp: 350000, reward: 50000 }
+    ], boss: { name: 'STAR EATER', hp: 1.2e6, reward: 240000, gates: 'warp' }
+  },
+  { id: 3, name: 'Void Periphery', enemies: [
+      { name: 'Null Phantom', hp: 8e6, reward: 1e6 },
+      { name: 'Entropy Maw', hp: 3e7, reward: 4e6 },
+      { name: 'Shard of Anti', hp: 1.2e8, reward: 2e7 }
+    ], boss: { name: 'VOID SOVEREIGN', hp: 6e8, reward: 1.5e8, gates: 'ascend' }
+  }
+];
+
+// REBALANCED DM costs — first ascend gives ~5 DM, Era 1 at 4 means you can buy it but spend 1 DM elsewhere
+const ERAS = [
+  { id: 1, name: 'Drone Network',  cost: 4,  desc: 'Auto-buy miners, send Expeditions' },
+  { id: 2, name: 'Combat AI',      cost: 8,  desc: 'Auto-fight, auto-refine, Research tree' },
+  { id: 3, name: 'Reality Engine', cost: 15, desc: 'Auto-warp, Anomalies, Singularity Forge' },
+  { id: 4, name: 'Transcendence',  cost: 30, desc: 'Auto-ascend, full automation' }
+];
+
+const META = [
+  { id: 'tap',      name: 'Hardened Probe',    desc: 'Tap power +1',                cost: 1,  max: 50 },
+  { id: 'start',    name: 'Reserve Cache',     desc: '+25 starting Ore',            cost: 1,  max: 30 },
+  { id: 'crys',     name: 'Crystal Lattice',   desc: '+5% Ore from Crystals',       cost: 2,  max: 40 },
+  { id: 'sing',     name: 'Gravity Lens',      desc: '+10% Singularity gain',       cost: 4,  max: 20 },
+  { id: 'offline',  name: 'Offline Reactor',   desc: 'Earn 50% rate while away',    cost: 3,  max: 4 },
+  { id: 'speed',    name: 'Time Compressor',   desc: 'Production +25%',             cost: 5,  max: 20 },
+  { id: 'cheap',    name: 'Quantum Discount',  desc: 'Items 5% cheaper',            cost: 3,  max: 15 },
+  { id: 'wpndmg',   name: 'Targeting AI',      desc: 'Weapon damage +25%',          cost: 4,  max: 20 },
+  { id: 'bossres',  name: 'Boss Hunter',       desc: '+25% boss rewards',           cost: 4,  max: 8 },
+  { id: 'expspd',   name: 'Warp Drive',        desc: 'Expeditions 15% faster',      cost: 3,  max: 10, era: 1 },
+  { id: 'expyld',   name: 'Cargo Holds',       desc: 'Expeditions +20% rewards',    cost: 3,  max: 15, era: 1 },
+  { id: 'rsdisc',   name: 'AI Tutor',          desc: 'Research 10% cheaper',        cost: 4,  max: 8,  era: 2 },
+  { id: 'anchance', name: 'Quantum Sensor',    desc: '+25% Anomaly spawn rate',     cost: 5,  max: 6,  era: 3 }
+];
+
+const EXPEDITIONS = [
+  { id: 'short',  name: 'Short Sweep',     icon: '►',  duration: 300,   minerCost: 3,  yield: { crys: 2, scrap: 50 },    desc: '5 minutes — small batch' },
+  { id: 'med',    name: 'Deep Survey',     icon: '►►', duration: 1800,  minerCost: 8,  yield: { crys: 15, scrap: 500 },  desc: '30 minutes — rich vein' },
+  { id: 'long',   name: 'Frontier Push',   icon: '⟫⟫', duration: 7200,  minerCost: 20, yield: { crys: 80, scrap: 4000 }, desc: '2 hours — major haul' },
+  { id: 'epic',   name: 'Galactic Run',    icon: '⊙',  duration: 21600, minerCost: 40, yield: { crys: 350, scrap: 25000, sing: 1 }, desc: '6 hours — chance of Singularity' }
+];
+
+const RESEARCH = [
+  { id: 'm1', col: 0, row: 0, name: 'Quantum Drills',      desc: 'Miners +50% production',           cost: 1, prereq: [], effect: { type: 'mineRate', val: 0.5 } },
+  { id: 'm2', col: 0, row: 1, name: 'Gravity Wells',       desc: 'Tap power ×3',                     cost: 2, prereq: ['m1'], effect: { type: 'tapMult', val: 3 } },
+  { id: 'm3', col: 0, row: 2, name: 'Antimatter Cores',    desc: 'Miners +200% production',          cost: 4, prereq: ['m2'], effect: { type: 'mineRate', val: 2.0 } },
+  { id: 'm4', col: 0, row: 3, name: 'Cosmic Networks',     desc: 'Each refine: +10% perm Ore',       cost: 8, prereq: ['m3'], effect: { type: 'perRefine', val: 0.1 } },
+  { id: 'c1', col: 1, row: 0, name: 'Smart Munitions',     desc: 'Weapons +50% damage',              cost: 1, prereq: [], effect: { type: 'wpnDmg', val: 0.5 } },
+  { id: 'c2', col: 1, row: 1, name: 'Crit Calibration',    desc: 'Tap crit chance 10→25%',           cost: 2, prereq: ['c1'], effect: { type: 'critChance', val: 0.15 } },
+  { id: 'c3', col: 1, row: 2, name: 'Annihilation Field',  desc: 'Weapons +200% damage',             cost: 4, prereq: ['c2'], effect: { type: 'wpnDmg', val: 2.0 } },
+  { id: 'c4', col: 1, row: 3, name: 'Boss Shredder',       desc: 'Bosses take +500% damage',         cost: 8, prereq: ['c3'], effect: { type: 'bossDmg', val: 5.0 } },
+  { id: 'a1', col: 2, row: 0, name: 'Optimizer Routine',   desc: 'Auto-buy 25% faster',              cost: 1, prereq: [], effect: { type: 'autoSpeed', val: 0.25 } },
+  { id: 'a2', col: 2, row: 1, name: 'Predictive AI',       desc: 'Auto-refine threshold -25%',       cost: 2, prereq: ['a1'], effect: { type: 'refineThresh', val: -0.25 } },
+  { id: 'a3', col: 2, row: 2, name: 'Fleet Coordination',  desc: 'Expeditions 30% shorter',          cost: 4, prereq: ['a2'], effect: { type: 'expSpeed', val: 0.3 } },
+  { id: 'a4', col: 2, row: 3, name: 'Reality Compiler',    desc: 'Global production ×3',             cost: 8, prereq: ['a3'], effect: { type: 'globalMult', val: 3.0 } }
+];
+
+// ANOMALIES — with art types and proper combat encounters
+const ANOMALY_TYPES = [
+  {
+    id: 'flare', name: 'SOLAR FLARE', icon: '☼', duration: 120,
+    desc: 'A photonic predator emerges from a dying star. Defeat the Flare Lord for ×3 ore for 30 minutes!',
+    isCombat: true, bossName: 'FLARE LORD',
+    reward: { type: 'oreMult', val: 3, dur: 1800 }
+  },
+  {
+    id: 'storm', name: 'QUANTUM STORM', icon: '⚡', duration: 90,
+    desc: 'Reality tears at the seams. Choose ONE boon — the other vanishes forever.',
+    choices: [
+      { label: '×10 ORE / 5MIN', val: { type: 'oreMult', val: 10, dur: 300 } },
+      { label: '×10 DPS / 5MIN', val: { type: 'dpsMult', val: 10, dur: 300 } }
+    ]
+  },
+  {
+    id: 'rift', name: 'TEMPORAL RIFT', icon: '◯', duration: 60,
+    desc: 'A wound in spacetime. Step through to claim 30 minutes of mining instantly.',
+    instantReward: { type: 'oreTime', val: 1800 }
+  },
+  {
+    id: 'cache', name: 'SUPPLY CACHE', icon: '◇', duration: 180,
+    desc: 'A drifting cargo pod from a lost civilization. Pry it open for crystals.',
+    instantReward: { type: 'crys', val: 'auto' }
+  }
+];
+
+const FORGE_MODIFIERS = [
+  { id: 'mfMine',   name: 'Mining Focus',   tag: 'tradeoff',  effect: 'Ore rate ×5, DPS ×0.4' },
+  { id: 'mfCombat', name: 'War Doctrine',   tag: 'tradeoff',  effect: 'DPS ×5, Ore rate ×0.4' },
+  { id: 'mfFast',   name: 'Speedrun',       tag: 'tradeoff',  effect: 'All gains ×2, but boss HP ×3' },
+  { id: 'mfRich',   name: 'Crystal Vein',   tag: 'economic',  effect: 'Refine yield ×3' },
+  { id: 'mfWarp',   name: 'Warp Mastery',   tag: 'economic',  effect: 'Warp yield ×2' },
+  { id: 'mfTap',    name: 'Iron Fingers',   tag: 'utility',   effect: 'Tap power ×10, no auto-tap' },
+  { id: 'mfAuto',   name: 'Pure Automation',tag: 'utility',   effect: 'Auto features +50%, taps disabled' },
+  { id: 'mfSwarm',  name: 'Cheap Swarm',    tag: 'tradeoff',  effect: 'Items 30% cheaper, output ×0.7' },
+  { id: 'mfBoss',   name: 'Bounty Hunter',  tag: 'offensive', effect: 'Boss rewards ×5' }
+];
+
+// ----- STATE -----
+function freshState() {
+  return {
+    ore: 0, totalOre: 0,
+    crys: 0, totalCrys: 0,
+    sing: 0, totalSing: 0,
+    dm: 0,
+    scrap: 0, totalScrap: 0,
+    miners: Object.fromEntries(MINERS.map(m => [m.id, 0])),
+    weapons: Object.fromEntries(WEAPONS.map(w => [w.id, 0])),
+    meta: Object.fromEntries(META.map(m => [m.id, 0])),
+    research: {},
+    forgeModifiers: [],
+    erasUnlocked: 0,
+    autos: {
+      buyMiners: false,
+      buyMinersStrategy: 'cheap',
+      buyWeapons: false,
+      buyWeaponsStrategy: 'efficient',
+      refine: false,
+      warp: false,
+      ascend: false,
+    },
+    autoBoughtCounts: { miners: 0, weapons: 0 },
+    tab: 'mine', mode: 'mine',
+    lastSave: Date.now(), lastTick: Date.now(),
+    autoBuyAcc: 0,
+    sector: 1,
+    refineCount: 0, warpCount: 0, ascendCount: 0,
+    currentStage: 1, currentEnemyIdx: 0,
+    enemyHp: 40, enemyMaxHp: 40,
+    inAnomalyFight: false,    // we're fighting an anomaly boss
+    anomalyFightData: null,   // { typeId, bossName, originalHp }
+    kills: 0,
+    bossesDefeated: { 1: false, 2: false, 3: false },
+    bossesEverDefeated: { 1: 0, 2: 0, 3: 0 },
+    expeditions: {},
+    expeditionsHistory: 0,
+    activeBuffs: [],
+    pendingAnomaly: null,
+    anomalyAcc: 0,
+  };
+}
+let state = freshState();
+
+const STORAGE_KEY = 'voidminers:save:v4';
+async function save() {
+  state.lastSave = Date.now();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn('Save failed:', e);
+  }
+}
+async function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const fresh = freshState();
+    state = Object.assign(fresh, JSON.parse(raw));
+    for (const m of MINERS) if (state.miners[m.id] === undefined) state.miners[m.id] = 0;
+    for (const w of WEAPONS) if (state.weapons[w.id] === undefined) state.weapons[w.id] = 0;
+    for (const m of META) if (state.meta[m.id] === undefined) state.meta[m.id] = 0;
+    if (!state.bossesDefeated) state.bossesDefeated = {1:false,2:false,3:false};
+    if (!state.bossesEverDefeated) state.bossesEverDefeated = {1:0,2:0,3:0};
+    if (!state.research) state.research = {};
+    if (!state.forgeModifiers) state.forgeModifiers = [];
+    if (!state.expeditions) state.expeditions = {};
+    if (!state.activeBuffs) state.activeBuffs = [];
+    if (!state.autos) state.autos = fresh.autos;
+    return true;
+  } catch (e) { console.warn('Load failed:', e); return false; }
+}
+async function wipe() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+// Export save as base64 string (paste into another browser to migrate)
+function exportSave() {
+  try {
+    const data = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    navigator.clipboard?.writeText(data).then(
+      () => toast('SAVE COPIED TO CLIPBOARD', 'green'),
+      () => prompt('Copy this save code:', data)
+    );
+    return data;
+  } catch (e) { toast('EXPORT FAILED', 'bad'); }
+}
+function importSave(code) {
+  try {
+    const parsed = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if (!parsed || typeof parsed !== 'object') throw new Error('bad');
+    const fresh = freshState();
+    state = Object.assign(fresh, parsed);
+    for (const m of MINERS) if (state.miners[m.id] === undefined) state.miners[m.id] = 0;
+    for (const w of WEAPONS) if (state.weapons[w.id] === undefined) state.weapons[w.id] = 0;
+    for (const m of META) if (state.meta[m.id] === undefined) state.meta[m.id] = 0;
+    save();
+    applyEraTheme();
+    spawnNextEnemy();
+    render();
+    toast('SAVE IMPORTED', 'green');
+  } catch (e) { toast('INVALID SAVE CODE', 'bad'); }
+}
+
+// ===== Helpers =====
+function era() { return state.erasUnlocked; }
+function hasModifier(id) { return state.forgeModifiers.includes(id); }
+function discountMult() { return Math.pow(0.95, state.meta.cheap || 0) * (hasModifier('mfSwarm') ? 0.7 : 1); }
+function minerCost(m, owned) { return Math.ceil(m.base * Math.pow(m.growth, owned) * discountMult()); }
+function weaponCost(w, owned) { return Math.ceil(w.base * Math.pow(w.growth, owned) * discountMult()); }
+
+function bonusFromResearch(type) {
+  let val = 0;
+  for (const id in state.research) {
+    if (!state.research[id]) continue;
+    const node = RESEARCH.find(r => r.id === id);
+    if (node && node.effect.type === type) val += node.effect.val;
+  }
+  return val;
+}
+function hasResearch(type) { return bonusFromResearch(type) > 0; }
+
+function totalRate() {
+  let r = 0;
+  for (const m of MINERS) r += m.rate * state.miners[m.id];
+  let mult = globalMult();
+  mult *= (1 + bonusFromResearch('mineRate'));
+  mult *= (1 + bonusFromResearch('perRefine') * state.refineCount);
+  if (hasModifier('mfMine')) mult *= 5;
+  if (hasModifier('mfCombat')) mult *= 0.4;
+  if (hasModifier('mfFast')) mult *= 2;
+  if (hasModifier('mfSwarm')) mult *= 0.7;
+  for (const b of state.activeBuffs) if (b.type === 'oreMult') mult *= b.val;
+  const awayCount = Object.values(state.expeditions).filter(e => e.active).reduce((s, e) => s + (e.minerCost || 0), 0);
+  if (awayCount > 0) {
+    const awayRatio = Math.min(1, awayCount / 100);
+    mult *= (1 - awayRatio * 0.5);
+  }
+  return r * mult;
+}
+function totalDPS() {
+  let d = 0;
+  for (const w of WEAPONS) d += w.dps * state.weapons[w.id];
+  let mult = (1 + 0.25 * (state.meta.wpndmg || 0));
+  mult *= (1 + bonusFromResearch('wpnDmg'));
+  mult *= globalMult();
+  if (hasModifier('mfCombat')) mult *= 5;
+  if (hasModifier('mfMine')) mult *= 0.4;
+  if (hasModifier('mfFast')) mult *= 2;
+  if (hasModifier('mfSwarm')) mult *= 0.7;
+  const enc = getCurrentEncounter();
+  if (enc?.isBoss) mult *= (1 + bonusFromResearch('bossDmg'));
+  for (const b of state.activeBuffs) if (b.type === 'dpsMult') mult *= b.val;
+  return d * mult;
+}
+function globalMult() {
+  const crysBoost = 0.02 + 0.005 * (state.meta.crys || 0);
+  const mFromCrys = 1 + state.crys * crysBoost;
+  const mFromSing = Math.pow(1.5, Math.min(state.sing, 50));
+  const mFromSpeed = Math.pow(1.25, state.meta.speed || 0);
+  const sectorBonus = Math.pow(2, Math.min(state.sector - 1, 20));
+  const research = (1 + bonusFromResearch('globalMult'));
+  return mFromCrys * mFromSing * mFromSpeed * sectorBonus * research;
+}
+function tapPower() {
+  let base = (1 + (state.meta.tap || 0));
+  if (hasResearch('tapMult')) base *= (1 + bonusFromResearch('tapMult'));
+  if (hasModifier('mfTap')) base *= 10;
+  if (hasModifier('mfAuto')) base = 0;
+  return base * globalMult();
+}
+function tapDamage() { return tapPower() * 3 * (1 + 0.25 * (state.meta.wpndmg || 0)) * (1 + bonusFromResearch('wpnDmg')); }
+function critChance() { return 0.10 + bonusFromResearch('critChance'); }
+function refineThreshold() { return 5000 * (1 + bonusFromResearch('refineThresh')); }
+function expDuration(e) {
+  let d = e.duration;
+  d *= (1 - 0.15 * (state.meta.expspd || 0));
+  d *= (1 - bonusFromResearch('expSpeed'));
+  return Math.max(30, d);
+}
+function expYield(e) {
+  const yieldMult = 1 + 0.2 * (state.meta.expyld || 0);
+  const richMult = hasModifier('mfRich') ? 3 : 1;
+  return {
+    crys: Math.floor((e.yield.crys || 0) * yieldMult * richMult),
+    scrap: Math.floor((e.yield.scrap || 0) * yieldMult),
+    sing: e.yield.sing || 0
+  };
+}
+
+function weaponUnlocked(w) {
+  if (w.unlock === 'always') return true;
+  if (w.unlock.startsWith('kills:')) return state.kills >= parseInt(w.unlock.split(':')[1]);
+  if (w.unlock.startsWith('boss:')) return state.bossesEverDefeated[parseInt(w.unlock.split(':')[1])] > 0;
+  return false;
+}
+
+function getCurrentEncounter() {
+  if (state.inAnomalyFight && state.anomalyFightData) {
+    return {
+      name: state.anomalyFightData.bossName,
+      hp: state.enemyMaxHp,
+      reward: 0,
+      isBoss: false,
+      isAnomaly: true,
+      stageId: 0
+    };
+  }
+  const stage = STAGES.find(s => s.id === state.currentStage);
+  if (!stage) return null;
+  if (state.currentEnemyIdx >= stage.enemies.length) {
+    let bossHp = stage.boss.hp;
+    if (hasModifier('mfFast')) bossHp *= 3;
+    return { ...stage.boss, hp: bossHp, isBoss: true, stageId: stage.id };
+  }
+  const e = stage.enemies[state.currentEnemyIdx];
+  return { ...e, isBoss: false, stageId: stage.id };
+}
+
+function spawnNextEnemy() {
+  let stage = STAGES.find(s => s.id === state.currentStage);
+  if (!stage) {
+    state.currentStage = 3; state.currentEnemyIdx = 0;
+    stage = STAGES.find(s => s.id === state.currentStage);
+  }
+  const enc = getCurrentEncounter();
+  if (!enc) return;
+  state.enemyMaxHp = enc.hp;
+  state.enemyHp = enc.hp;
+  if (enc.isBoss) playBossEntrance(enc.name, 'boss');
+}
+
+function playBossEntrance(name, kind) {
+  const el = document.getElementById('boss-entrance');
+  document.getElementById('be-name').textContent = '⚠ ' + name + ' ⚠';
+  const subText = kind === 'anomaly' ? '// QUANTUM SIGNATURE LOCKED' : '// HOSTILE TARGET DETECTED';
+  document.getElementById('be-sub').textContent = subText;
+  el.classList.remove('active', 'anomaly');
+  if (kind === 'anomaly') el.classList.add('anomaly');
+  // restart animation
+  void el.offsetWidth;
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 2500);
+}
+
+function damageEnemy(amount, fromTap) {
+  if (amount <= 0) return;
+  state.enemyHp -= amount;
+  if (state.mode === 'combat' && fromTap) {
+    const core = document.getElementById('core');
+    core.classList.add('hurt');
+    setTimeout(() => core.classList.remove('hurt'), 250);
+  }
+  if (state.enemyHp <= 0) onEnemyDeath();
+}
+
+function onEnemyDeath() {
+  // anomaly boss?
+  if (state.inAnomalyFight) {
+    const t = ANOMALY_TYPES.find(x => x.id === state.anomalyFightData.typeId);
+    state.inAnomalyFight = false;
+    state.anomalyFightData = null;
+    state.pendingAnomaly = null;
+    // grant reward
+    if (t.reward) {
+      state.activeBuffs.push({ ...t.reward, expiresAt: Date.now() + t.reward.dur * 1000 });
+    }
+    // also a chunk of ore for the kill
+    const bonus = state.totalOre * 0.1 + 1000;
+    state.ore += bonus; state.totalOre += bonus;
+    showAnomalyVictory(t, bonus);
+    spawnNextEnemy(); // back to normal stage
+    render(); save();
+    return;
+  }
+
+  const enc = getCurrentEncounter();
+  if (!enc) return;
+  let bossBonus = 1 + 0.25 * (state.meta.bossres || 0);
+  if (hasModifier('mfBoss')) bossBonus *= 5;
+  const reward = Math.floor(enc.reward * (enc.isBoss ? bossBonus : 1));
+  state.scrap += reward; state.totalScrap += reward;
+  const oreReward = reward * 10;
+  state.ore += oreReward; state.totalOre += oreReward;
+  state.kills++;
+
+  if (enc.isBoss) {
+    state.bossesDefeated[enc.stageId] = true;
+    state.bossesEverDefeated[enc.stageId] = (state.bossesEverDefeated[enc.stageId] || 0) + 1;
+    showBossVictory(enc, reward, oreReward);
+    state.currentStage++; state.currentEnemyIdx = 0;
+  } else {
+    toast(`☠ ${enc.name} +${fmt(oreReward)} ORE`);
+    state.currentEnemyIdx++;
+  }
+  spawnNextEnemy();
+  render(); save();
+}
+
+function showBossVictory(enc, scrapReward, oreReward) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `
+    <div class="modal victory">
+      <h2>// BOSS DEFEATED</h2>
+      <p style="font-size:13px;color:var(--gold);letter-spacing:0.15em;margin:8px 0">${enc.name}</p>
+      <div class="reward">+ ${fmt(oreReward)} ORE<br><span style="font-size:11px;color:var(--orange)">+ ${fmt(scrapReward)} SCRAP</span></div>
+      <p style="color:var(--ok);font-size:12px;letter-spacing:0.15em">${enc.gates ? '↑ ' + enc.gates.toUpperCase() + ' GATE OPENED' : ''}</p>
+      <button class="btn go combat" id="modal-ok" style="margin-top:10px">CONTINUE</button>
+    </div>`;
+  document.body.appendChild(bg);
+  document.getElementById('modal-ok').addEventListener('click', () => bg.remove());
+}
+
+function showAnomalyVictory(t, oreBonus) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  let buffText = '';
+  if (t.reward) {
+    if (t.reward.type === 'oreMult') buffText = `×${t.reward.val} ORE for ${fmtTime(t.reward.dur)}`;
+    if (t.reward.type === 'dpsMult') buffText = `×${t.reward.val} DPS for ${fmtTime(t.reward.dur)}`;
+  }
+  bg.innerHTML = `
+    <div class="modal anomaly">
+      <h2>// ANOMALY RESOLVED</h2>
+      <p style="font-size:13px;color:var(--violet);letter-spacing:0.15em;margin:8px 0">${t.name}</p>
+      <div class="reward" style="color:var(--violet)">${buffText}</div>
+      <p style="color:var(--cyan);font-size:11px">+ ${fmt(oreBonus)} BONUS ORE</p>
+      <button class="btn go ascend" id="modal-ok" style="margin-top:10px">CONTINUE</button>
+    </div>`;
+  document.body.appendChild(bg);
+  document.getElementById('modal-ok').addEventListener('click', () => bg.remove());
+}
+
+// ===== PRESTIGE =====
+function refineGain() {
+  if (!state.bossesDefeated[1]) return 0;
+  if (state.totalOre < refineThreshold()) return 0;
+  let g = Math.floor(Math.sqrt(state.totalOre / refineThreshold()));
+  if (hasModifier('mfRich')) g = Math.floor(g * 3);
+  return g;
+}
+function warpGain() {
+  if (!state.bossesDefeated[2]) return 0;
+  if (state.totalCrys < 25) return 0;
+  let g = Math.floor(Math.pow(state.totalCrys / 25, 0.6) * (1 + 0.1 * (state.meta.sing || 0)));
+  if (hasModifier('mfWarp')) g = Math.floor(g * 2);
+  return Math.max(g, 1);
+}
+function ascendGain() {
+  if (!state.bossesDefeated[3]) return 0;
+  if (state.totalSing < 4) return 0;
+  // First ascend at 4 sing → 5 DM (enough to unlock Era 1 at cost 4, with 1 left over)
+  // 8 sing → ~9 DM, 16 sing → ~16 DM, scales smoothly
+  return Math.max(1, Math.floor(state.totalSing * 1.25));
+}
+
+// ----- inverse helpers: what total resource gives the NEXT integer of gain? -----
+// Returns the threshold to reach (next_gain), or null if no meaningful next tier
+function nextRefineThreshold() {
+  const cur = refineGain();
+  if (cur < 1) {
+    // need to reach the floor first
+    return { needed: refineThreshold(), nextGain: 1 };
+  }
+  // refineGain = floor(sqrt(totalOre / T)) → totalOre needed for cur+1 = (cur+1)^2 * T
+  // with mfRich it's tripled, but the floor is on the inner sqrt then *3, so handle accordingly
+  if (hasModifier('mfRich')) {
+    // gain = floor(sqrt(...)) * 3 — next tier of the actual gain comes when inner gain crosses next integer
+    const innerNext = Math.floor(cur / 3) + 1;
+    return { needed: Math.ceil(innerNext * innerNext * refineThreshold()), nextGain: innerNext * 3 };
+  }
+  return { needed: Math.ceil((cur + 1) * (cur + 1) * refineThreshold()), nextGain: cur + 1 };
+}
+function nextWarpThreshold() {
+  const cur = warpGain();
+  if (cur < 1) return { needed: 25, nextGain: 1 };
+  // warpGain = floor( (totalCrys/25)^0.6 * (1 + 0.1*sing) ) (then *2 if mfWarp)
+  const lensBonus = 1 + 0.1 * (state.meta.sing || 0);
+  const warpMult = hasModifier('mfWarp') ? 2 : 1;
+  // If warp doubled: nextInner = floor(cur/2)+1
+  const innerNext = warpMult === 2 ? Math.floor(cur / 2) + 1 : cur + 1;
+  // Solve: innerNext = (totalCrys/25)^0.6 * lensBonus → totalCrys = 25 * (innerNext / lensBonus)^(1/0.6)
+  const needed = Math.ceil(25 * Math.pow(innerNext / lensBonus, 1 / 0.6));
+  return { needed, nextGain: innerNext * warpMult };
+}
+function nextAscendThreshold() {
+  const cur = ascendGain();
+  if (cur < 1) return { needed: 4, nextGain: 1 };
+  // ascendGain = floor(totalSing * 1.25). Next tier when totalSing*1.25 crosses cur+1
+  const needed = Math.ceil((cur + 1) / 1.25);
+  return { needed, nextGain: cur + 1 };
+}
+
+function doRefine() {
+  const g = refineGain(); if (g <= 0) return;
+  state.crys += g; state.totalCrys += g; state.refineCount++;
+  state.ore = startingOre(); state.totalOre = 0;
+  for (const m of MINERS) state.miners[m.id] = 0;
+  for (const w of WEAPONS) state.weapons[w.id] = 0;
+  state.scrap = 0; state.kills = 0;
+  state.currentStage = 1; state.currentEnemyIdx = 0;
+  state.bossesDefeated = { 1: false, 2: false, 3: false };
+  spawnNextEnemy();
+  toast(`+${fmt(g)} CRYSTALS`, 'gold');
+  render(); save();
+}
+function doWarp() {
+  const g = warpGain(); if (g <= 0) return;
+  state.sing += g; state.totalSing += g; state.warpCount++; state.sector++;
+  state.ore = startingOre(); state.totalOre = 0;
+  state.crys = 0; state.totalCrys = 0;
+  for (const m of MINERS) state.miners[m.id] = 0;
+  for (const w of WEAPONS) state.weapons[w.id] = 0;
+  state.scrap = 0; state.kills = 0;
+  state.currentStage = 1; state.currentEnemyIdx = 0;
+  state.bossesDefeated = { 1: false, 2: false, 3: false };
+  spawnNextEnemy();
+  toast(`+${fmt(g)} SING — SECTOR ${String(state.sector).padStart(2,'0')}`, 'gold');
+  render(); save();
+}
+function doAscend() {
+  const g = ascendGain(); if (g <= 0) return;
+  if (era() >= 3) showForgeModal(g);
+  else finalizeAscend(g, []);
+}
+function finalizeAscend(g, modifiers) {
+  const keep = {
+    dm: state.dm + g,
+    meta: state.meta,
+    erasUnlocked: state.erasUnlocked,
+    research: state.research,
+    forgeModifiers: modifiers || [],
+    ascendCount: state.ascendCount + 1,
+    bossesEverDefeated: state.bossesEverDefeated,
+    expeditionsHistory: state.expeditionsHistory,
+    autos: state.autos
+  };
+  state = Object.assign(freshState(), keep);
+  state.ore = startingOre();
+  spawnNextEnemy();
+  toast(`+${fmt(g)} DARK MATTER — REALITY REWRITTEN`, 'violet');
+  state.tab = 'meta';
+  applyEraTheme();
+  render(); save();
+}
+
+function showForgeModal(ascendGainAmount) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  let cards = '';
+  for (const m of FORGE_MODIFIERS) {
+    cards += `<div class="modifier-card" data-mod="${m.id}">
+      <div><span class="m-name">${m.name}</span><span class="m-tag ${m.tag}">${m.tag.toUpperCase()}</span></div>
+      <div class="m-effect">${m.effect}</div>
+    </div>`;
+  }
+  bg.innerHTML = `
+    <div class="modal anomaly" style="max-width:440px;text-align:left">
+      <h2 style="text-align:center">// SINGULARITY FORGE</h2>
+      <p style="text-align:center">Pick up to 3 modifiers for the next run.<br>Modifiers reset when you Ascend again.</p>
+      <div class="forge-grid" style="margin:12px 0">${cards}</div>
+      <p style="text-align:center;color:var(--violet)">Selected: <span id="forge-count" style="font-size:16px;color:var(--violet)">0</span> / 3</p>
+      <button class="btn go ascend" id="forge-confirm" style="margin-top:8px">ASCEND</button>
+    </div>`;
+  document.body.appendChild(bg);
+  const selected = new Set();
+  bg.querySelectorAll('.modifier-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.mod;
+      if (selected.has(id)) {
+        selected.delete(id); card.classList.remove('selected');
+      } else if (selected.size < 3) {
+        selected.add(id); card.classList.add('selected');
+      }
+      bg.querySelector('#forge-count').textContent = selected.size;
+    });
+  });
+  bg.querySelector('#forge-confirm').addEventListener('click', () => {
+    bg.remove();
+    finalizeAscend(ascendGainAmount, [...selected]);
+  });
+}
+
+function startingOre() { return 25 * (state.meta.start || 0); }
+
+// ===== BUYING =====
+function buyMiner(id) {
+  const m = MINERS.find(x => x.id === id);
+  const cost = minerCost(m, state.miners[id]);
+  if (state.ore < cost) return false;
+  state.ore -= cost; state.miners[id]++;
+  return true;
+}
+function buyWeapon(id) {
+  const w = WEAPONS.find(x => x.id === id);
+  if (!weaponUnlocked(w)) return false;
+  const cost = weaponCost(w, state.weapons[id]);
+  if (state.ore < cost) return false;
+  state.ore -= cost; state.weapons[id]++;
+  return true;
+}
+
+// ===== AUTO-BUY =====
+function autoBuyTick(dt) {
+  state.autoBuyAcc += dt;
+  const speed = 1 / (1 + bonusFromResearch('autoSpeed'));
+  while (state.autoBuyAcc >= speed) {
+    state.autoBuyAcc -= speed;
+    let bought = false;
+    if (state.autos.buyMiners && era() >= 1) bought = autoBuyOne('miner') || bought;
+    if (state.autos.buyWeapons && era() >= 2) bought = autoBuyOne('weapon') || bought;
+    if (!bought) break;
+  }
+}
+function autoBuyOne(kind) {
+  const items = kind === 'miner' ? MINERS : WEAPONS;
+  const owned = kind === 'miner' ? state.miners : state.weapons;
+  const strategy = kind === 'miner' ? state.autos.buyMinersStrategy : state.autos.buyWeaponsStrategy;
+  const costFn = kind === 'miner' ? minerCost : weaponCost;
+  const valueFn = (it) => kind === 'miner' ? it.rate : it.dps;
+  let candidates = items.filter(it => {
+    if (kind === 'weapon' && !weaponUnlocked(it)) return false;
+    return state.ore >= costFn(it, owned[it.id]);
+  });
+  if (kind === 'miner') {
+    candidates = candidates.filter(it => {
+      const idx = MINERS.indexOf(it);
+      if (idx === 0) return true;
+      return state.miners[MINERS[idx-1].id] > 0 || state.totalOre >= it.base / 2;
+    });
+  }
+  if (candidates.length === 0) return false;
+  let pick;
+  if (strategy === 'cheap') pick = candidates.reduce((a, b) => costFn(a, owned[a.id]) < costFn(b, owned[b.id]) ? a : b);
+  else if (strategy === 'efficient') pick = candidates.reduce((a, b) => valueFn(a) / costFn(a, owned[a.id]) > valueFn(b) / costFn(b, owned[b.id]) ? a : b);
+  else pick = candidates.reduce((a, b) => items.indexOf(a) > items.indexOf(b) ? a : b);
+  state.ore -= costFn(pick, owned[pick.id]); owned[pick.id]++;
+  state.autoBoughtCounts[kind === 'miner' ? 'miners' : 'weapons']++;
+  return true;
+}
+
+function autoPrestigeTick() {
+  if (state.autos.refine && era() >= 2 && refineGain() > 0) doRefine();
+  if (state.autos.warp && era() >= 3 && warpGain() > 0) doWarp();
+  if (state.autos.ascend && era() >= 4 && ascendGain() > 0) finalizeAscend(ascendGain(), state.forgeModifiers);
+}
+
+// ===== EXPEDITIONS =====
+function startExpedition(id) {
+  const e = EXPEDITIONS.find(x => x.id === id);
+  if (!e || state.expeditions[id]?.active) return;
+  if (state.miners.drone < e.minerCost) {
+    toast('NEED ' + e.minerCost + ' SCOUT DRONES', 'bad'); return;
+  }
+  state.expeditions[id] = {
+    active: true, startTime: Date.now(), duration: expDuration(e) * 1000, minerCost: e.minerCost
+  };
+  toast(`Expedition launched: ${e.name}`, 'green');
+  render(); save();
+}
+function checkExpeditionsTick() {
+  const now = Date.now();
+  for (const id in state.expeditions) {
+    const ex = state.expeditions[id];
+    if (!ex.active) continue;
+    if (now - ex.startTime >= ex.duration) {
+      const e = EXPEDITIONS.find(x => x.id === id);
+      const y = expYield(e);
+      state.crys += y.crys; state.totalCrys += y.crys;
+      state.scrap += y.scrap; state.totalScrap += y.scrap;
+      let gotSing = false;
+      if (y.sing && Math.random() < 0.2) {
+        state.sing += y.sing; state.totalSing += y.sing;
+        gotSing = true;
+      }
+      if (gotSing) toast(`Expedition: +${fmt(y.crys)} CRYS, +${y.sing} SING!`, 'gold');
+      else toast(`Expedition: +${fmt(y.crys)} CRYS, +${fmt(y.scrap)} SCRAP`, 'green');
+      state.expeditions[id] = { active: false };
+      state.expeditionsHistory++;
+      render(); save();
+    }
+  }
+}
+
+// ===== AMBIENT AUDIO (procedural, no external files) =====
+// Web Audio API generates a slow drone with subtle modulation
+const audioCtl = {
+  ctx: null, master: null, started: false, muted: false,
+  oscs: [], lfos: [],
+};
+
+function initAudio() {
+  if (audioCtl.ctx) return;
+  try {
+    audioCtl.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtl.master = audioCtl.ctx.createGain();
+    audioCtl.master.gain.value = 0; // start silent, fade in
+    audioCtl.master.connect(audioCtl.ctx.destination);
+  } catch (e) { console.warn('Audio init failed:', e); }
+}
+
+function startAmbient() {
+  if (audioCtl.started || !audioCtl.ctx) return;
+  audioCtl.started = true;
+  const ctx = audioCtl.ctx;
+  const now = ctx.currentTime;
+
+  // Three layered drone frequencies (root + fifth + octave) — sci-fi pad
+  const baseFreqs = [55, 82.5, 110]; // A1, E2, A2
+  baseFreqs.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = i === 0 ? 'sine' : 'triangle';
+    osc.frequency.value = freq;
+    const oscGain = ctx.createGain();
+    oscGain.gain.value = i === 0 ? 0.18 : 0.08;
+
+    // Slow LFO for subtle pitch modulation (gives that "alive" feel)
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.05 + i * 0.03; // ~20s period, varies per voice
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.3 + i * 0.2;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+
+    // gentle lowpass for warmth
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800 + i * 400;
+    filter.Q.value = 0.5;
+
+    osc.connect(filter);
+    filter.connect(oscGain);
+    oscGain.connect(audioCtl.master);
+
+    osc.start(now);
+    lfo.start(now);
+    audioCtl.oscs.push(osc);
+    audioCtl.lfos.push(lfo);
+  });
+
+  // Fade in to comfortable volume
+  audioCtl.master.gain.cancelScheduledValues(now);
+  audioCtl.master.gain.setValueAtTime(0, now);
+  audioCtl.master.gain.linearRampToValueAtTime(audioCtl.muted ? 0 : 0.35, now + 2.5);
+}
+
+function toggleMute() {
+  audioCtl.muted = !audioCtl.muted;
+  if (audioCtl.ctx && audioCtl.master) {
+    const now = audioCtl.ctx.currentTime;
+    audioCtl.master.gain.cancelScheduledValues(now);
+    audioCtl.master.gain.linearRampToValueAtTime(audioCtl.muted ? 0 : 0.35, now + 0.4);
+  }
+  try { localStorage.setItem('voidminers:muted', audioCtl.muted ? '1' : '0'); } catch (e) {}
+  const btn = document.getElementById('mute-btn');
+  if (btn) btn.textContent = audioCtl.muted ? '♪ OFF' : '♪ ON';
+}
+
+// User-gesture-required: browsers block audio until first tap
+function unlockAudioOnFirstGesture() {
+  const handler = () => {
+    initAudio();
+    if (audioCtl.ctx && audioCtl.ctx.state === 'suspended') audioCtl.ctx.resume();
+    startAmbient();
+    document.removeEventListener('pointerdown', handler);
+  };
+  document.addEventListener('pointerdown', handler, { once: true });
+  // Restore mute preference
+  try {
+    if (localStorage.getItem('voidminers:muted') === '1') audioCtl.muted = true;
+  } catch (e) {}
+}
+
+// ===== ANOMALIES =====
+function anomalyTick(dt) {
+  if (era() < 3) return;
+  if (state.pendingAnomaly && !state.inAnomalyFight) {
+    if (Date.now() > state.pendingAnomaly.expiresAt) {
+      state.pendingAnomaly = null;
+      toast('ANOMALY FADED', 'bad');
+      render();
+    }
+    return;
+  }
+  if (state.pendingAnomaly || state.inAnomalyFight) return;
+  state.anomalyAcc += dt;
+  const interval = 600 / (1 + 0.25 * (state.meta.anchance || 0));
+  if (state.anomalyAcc >= interval) {
+    state.anomalyAcc = 0;
+    spawnAnomaly();
+  }
+}
+function spawnAnomaly() {
+  const t = ANOMALY_TYPES[Math.floor(Math.random() * ANOMALY_TYPES.length)];
+  state.pendingAnomaly = {
+    typeId: t.id,
+    expiresAt: Date.now() + t.duration * 1000,
+    spawnedAt: Date.now()
+  };
+  toast(`★ ANOMALY DETECTED: ${t.name}`, 'violet');
+  // auto-switch to anomaly tab if user is somewhere quiet
+  render();
+}
+function startAnomalyFight() {
+  if (!state.pendingAnomaly) return;
+  const t = ANOMALY_TYPES.find(x => x.id === state.pendingAnomaly.typeId);
+  if (!t || !t.isCombat) return;
+  // anomaly boss HP: scaled to current player power
+  const playerDPS = totalDPS();
+  const targetTtk = 30 + Math.random() * 30; // 30-60 second fight
+  const hp = Math.max(1000, playerDPS * targetTtk);
+  state.inAnomalyFight = true;
+  state.anomalyFightData = { typeId: t.id, bossName: t.bossName, originalHp: hp };
+  state.enemyMaxHp = hp;
+  state.enemyHp = hp;
+  state.mode = 'combat';
+  state.tab = 'combat';
+  // dramatic entrance
+  playBossEntrance(t.bossName, 'anomaly');
+  toast(`⚔ FIGHTING ${t.bossName}`, 'violet');
+  render(); save();
+}
+function resolveAnomaly(choiceIdx) {
+  if (!state.pendingAnomaly) return;
+  const t = ANOMALY_TYPES.find(x => x.id === state.pendingAnomaly.typeId);
+  if (!t) return;
+  if (t.isCombat) {
+    startAnomalyFight();
+    return;
+  }
+  if (t.choices) {
+    const choice = t.choices[choiceIdx];
+    if (choice.val.dur) state.activeBuffs.push({ ...choice.val, expiresAt: Date.now() + choice.val.dur * 1000 });
+    toast(`Quantum Storm: ${choice.label} active!`, 'violet');
+  } else if (t.instantReward) {
+    if (t.instantReward.type === 'oreTime') {
+      const gain = totalRate() * t.instantReward.val;
+      state.ore += gain; state.totalOre += gain;
+      toast(`+${fmt(gain)} ORE from rift!`, 'violet');
+    } else if (t.instantReward.type === 'crys') {
+      const gain = Math.max(1, Math.floor(Math.sqrt(state.totalOre / 1000)));
+      state.crys += gain; state.totalCrys += gain;
+      toast(`+${fmt(gain)} CRYS from cache!`, 'violet');
+    }
+  }
+  state.pendingAnomaly = null;
+  render(); save();
+}
+function buffsTick() {
+  const now = Date.now();
+  state.activeBuffs = state.activeBuffs.filter(b => b.expiresAt > now);
+}
+
+// ===== ERA / META =====
+function buyEra() {
+  const next = state.erasUnlocked + 1;
+  const eraData = ERAS.find(e => e.id === next);
+  if (!eraData || state.dm < eraData.cost) return;
+  state.dm -= eraData.cost;
+  state.erasUnlocked = next;
+  if (next === 1) state.autos.buyMiners = true;
+  if (next === 2) state.autos.buyWeapons = true;
+  showEraUnlockModal(eraData);
+  applyEraTheme();
+  render(); save();
+}
+function showEraUnlockModal(eraData) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  let features = '';
+  if (eraData.id === 1) features = '+ Auto-buy miners (3 strategies)<br>+ EXPEDITIONS — send fleets for Crystals<br>+ 2 new META upgrades';
+  else if (eraData.id === 2) features = '+ Auto-buy weapons<br>+ Auto-Refine when ready<br>+ RESEARCH tree (12 nodes, 3 paths)<br>+ AI Tutor META';
+  else if (eraData.id === 3) features = '+ Auto-Warp<br>+ ANOMALIES (4 event types, including combat)<br>+ SINGULARITY FORGE on Ascend (9 modifiers)<br>+ Quantum Sensor META';
+  else if (eraData.id === 4) features = '+ Auto-Ascend<br>+ True idle endgame<br>+ The universe runs itself';
+  bg.innerHTML = `
+    <div class="modal era">
+      <div class="era-num-big">0${eraData.id}</div>
+      <h2>// ${eraData.name.toUpperCase()}</h2>
+      <p style="color:var(--violet);font-size:11px;letter-spacing:0.2em;margin:6px 0">/ ERA UNLOCKED /</p>
+      <div class="feature-block">${features}</div>
+      <button class="btn go ascend" id="modal-ok">PROCEED</button>
+    </div>`;
+  document.body.appendChild(bg);
+  document.getElementById('modal-ok').addEventListener('click', () => bg.remove());
+}
+
+function applyEraTheme() {
+  document.body.setAttribute('data-era', state.erasUnlocked);
+}
+
+function buyMeta(id) {
+  const u = META.find(x => x.id === id);
+  if (!u || (u.era && era() < u.era)) return;
+  const owned = state.meta[id];
+  if (owned >= u.max || state.dm < u.cost) return;
+  state.dm -= u.cost;
+  state.meta[id] = owned + 1;
+  render(); save();
+}
+function buyResearch(id) {
+  if (era() < 2) return;
+  if (state.research[id]) return;
+  const node = RESEARCH.find(r => r.id === id);
+  if (!node || node.prereq.some(p => !state.research[p])) return;
+  const cost = Math.ceil(node.cost * (1 - 0.1 * (state.meta.rsdisc || 0)));
+  if (state.sing < cost) return;
+  state.sing -= cost;
+  state.research[id] = true;
+  toast(`RESEARCHED: ${node.name}`, 'gold');
+  render(); save();
+}
+
+// ===== MAIN TICK =====
+function tick() {
+  const now = Date.now();
+  let dt = (now - state.lastTick) / 1000;
+  if (dt < 0) dt = 0; if (dt > 5) dt = 5;
+  state.lastTick = now;
+  buffsTick();
+  state.ore += totalRate() * dt; state.totalOre += totalRate() * dt;
+  const dps = totalDPS();
+  if (dps > 0) damageEnemy(dps * dt, false);
+  if (era() >= 1) autoBuyTick(dt);
+  autoPrestigeTick();
+  checkExpeditionsTick();
+  anomalyTick(dt);
+  renderResources(); renderCombat();
+}
+
+function applyOffline() {
+  const ol = state.meta.offline || 0;
+  if (ol <= 0) return;
+  const elapsed = Math.max(0, (Date.now() - state.lastSave) / 1000);
+  if (elapsed < 30) return;
+  const cap = 60 * 60 * 4 * ol;
+  const eff = Math.min(elapsed, cap);
+  const gain = totalRate() * eff * 0.5;
+  if (gain <= 0) return;
+  state.ore += gain; state.totalOre += gain;
+  showOfflineModal(eff, gain);
+}
+function showOfflineModal(secs, gain) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `
+    <div class="modal">
+      <h2>// SIGNAL RESTORED</h2>
+      <p>Drones kept mining while offline.</p>
+      <div class="reward">+ ${fmt(gain)} ORE</div>
+      <p style="margin-bottom:14px">${fmtTime(secs)} @ 50% rate</p>
+      <button class="btn go refine" id="modal-ok">CONTINUE</button>
+    </div>`;
+  document.body.appendChild(bg);
+  document.getElementById('modal-ok').addEventListener('click', () => bg.remove());
+}
+
+let toastTimer;
+function toast(msg, kind) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (kind ? ' ' + kind : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 2500);
+}
+function spawnFloat(x, y, text, kind) {
+  const el = document.createElement('div');
+  el.className = 'float' + (kind ? ' ' + kind : '');
+  el.textContent = text; el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.getElementById('core').appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+// ===== RENDER =====
+function renderResources() {
+  document.getElementById('ore').textContent = fmt(state.ore);
+  document.getElementById('crys').textContent = fmt(state.crys);
+  document.getElementById('sing').textContent = fmt(state.sing);
+  document.getElementById('dm').textContent = fmt(state.dm);
+  document.getElementById('scrap').textContent = fmt(state.scrap);
+  document.getElementById('ops').textContent = fmt(totalRate()) + '/s';
+  document.getElementById('tier-text').textContent = '// SECTOR ' + String(state.sector).padStart(2, '0') + ' // ERA ' + state.erasUnlocked;
+  if (state.mode === 'mine') document.getElementById('tap-power').textContent = '+' + fmt(tapPower()) + ' / TAP';
+  else document.getElementById('tap-power').textContent = fmt(tapDamage()) + ' DMG / TAP';
+}
+
+function renderCombat() {
+  const core = document.getElementById('core');
+  const eInfo = document.getElementById('enemy-info');
+  const hpBar = document.getElementById('hp-bar');
+  const hpText = document.getElementById('hp-text');
+  const dpsText = document.getElementById('dps-text');
+  core.classList.remove('boss-fight', 'anomaly-fight');
+  if (state.mode === 'combat') {
+    core.classList.add('combat-mode');
+    eInfo.style.display = 'flex'; hpBar.style.display = 'block';
+    hpText.style.display = 'block'; dpsText.style.display = 'block';
+    const enc = getCurrentEncounter();
+    if (enc) {
+      if (enc.isAnomaly) core.classList.add('anomaly-fight');
+      else if (enc.isBoss) core.classList.add('boss-fight');
+      const name = document.getElementById('enemy-name');
+      name.textContent = enc.name;
+      name.classList.remove('boss', 'anomaly');
+      if (enc.isBoss) name.classList.add('boss');
+      if (enc.isAnomaly) name.classList.add('anomaly');
+      let tierLabel = '';
+      if (enc.isAnomaly) tierLabel = '⚡ANOMALY';
+      else tierLabel = `S${enc.stageId}·${enc.isBoss ? 'BOSS' : 'W' + (state.currentEnemyIdx + 1)}`;
+      document.getElementById('enemy-tier').textContent = tierLabel;
+      const pct = Math.max(0, Math.min(100, (state.enemyHp / state.enemyMaxHp) * 100));
+      document.getElementById('hp-fill').style.width = pct + '%';
+      hpText.textContent = `${fmt(Math.max(0,state.enemyHp))} / ${fmt(state.enemyMaxHp)}`;
+      dpsText.textContent = fmt(totalDPS()) + ' DPS';
+    }
+  } else {
+    core.classList.remove('combat-mode');
+    eInfo.style.display = 'none'; hpBar.style.display = 'none';
+    hpText.style.display = 'none'; dpsText.style.display = 'none';
+  }
+}
+
+function renderTabs() {
+  const tabs = [
+    { id: 'mine',     label: 'MINE',  cls: '' },
+    { id: 'combat',   label: 'FIGHT', cls: 'combat' },
+    { id: 'expedition', label: 'EXPED', cls: 'expedition', minEra: 1 },
+    { id: 'research', label: 'RSCH', cls: 'research', minEra: 2 },
+    { id: 'anomaly',  label: 'ANOM', cls: 'anomaly', minEra: 3 },
+    { id: 'upgrade',  label: 'STAT', cls: '' },
+    { id: 'prestige', label: 'RESET',cls: '' },
+    { id: 'meta',     label: 'META', cls: '' }
+  ];
+  let html = '';
+  for (const t of tabs) {
+    const locked = (t.minEra && era() < t.minEra) ||
+                   (t.id === 'combat' && state.totalOre < 30 && state.kills === 0 && state.weapons.laser === 0) ||
+                   (t.id === 'meta' && state.dm <= 0 && state.ascendCount === 0);
+    let badge = '';
+    if (t.id === 'prestige' && (refineGain() > 0 || warpGain() > 0 || ascendGain() > 0)) badge = ' <span class="badge">!</span>';
+    if (t.id === 'anomaly' && state.pendingAnomaly) badge = ' <span class="badge violet">★</span>';
+    if (t.id === 'expedition' && Object.values(state.expeditions).some(e => e.active)) badge = ' <span class="badge green">●</span>';
+    html += `<button class="tab ${t.cls} ${state.tab === t.id ? 'active' : ''} ${locked ? 'locked' : ''}" data-tab="${t.id}">${t.label}${badge}</button>`;
+  }
+  document.getElementById('tabs').innerHTML = html;
+  document.querySelectorAll('#tabs .tab').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('locked')) return;
+      state.tab = el.dataset.tab;
+      if (state.tab === 'combat') {
+        state.mode = 'combat';
+        const btn = document.getElementById('mode-toggle');
+        btn.textContent = '/ FIGHT'; btn.classList.add('combat');
+      } else if (state.tab === 'mine') {
+        state.mode = 'mine';
+        const btn = document.getElementById('mode-toggle');
+        btn.textContent = '/ MINE'; btn.classList.remove('combat');
+      }
+      render();
+    });
+  });
+}
+
+function renderPanel() {
+  const panel = document.getElementById('panel');
+  switch (state.tab) {
+    case 'mine': panel.innerHTML = renderMine(); attachBuy(); break;
+    case 'combat': panel.innerHTML = renderCombatPanel(); attachWeapon(); break;
+    case 'expedition': panel.innerHTML = renderExpeditions(); attachExp(); break;
+    case 'research': panel.innerHTML = renderResearch(); attachResearch(); break;
+    case 'anomaly': panel.innerHTML = renderAnomaly(); attachAnom(); break;
+    case 'upgrade': panel.innerHTML = renderStats(); break;
+    case 'prestige': panel.innerHTML = renderPrestige(); attachPrestige(); break;
+    case 'meta': panel.innerHTML = renderMeta(); attachMeta(); break;
+  }
+}
+function attachBuy() {
+  document.querySelectorAll('#panel [data-buy]').forEach(el => el.addEventListener('click', () => { buyMiner(el.dataset.buy); render(); save(); }));
+  document.querySelectorAll('#panel [data-strat-m]').forEach(el => el.addEventListener('click', () => { state.autos.buyMinersStrategy = el.dataset.stratM; render(); save(); }));
+  document.querySelectorAll('#panel [data-toggle-buy-miners]').forEach(el => el.addEventListener('click', () => { state.autos.buyMiners = !state.autos.buyMiners; render(); save(); }));
+}
+function attachWeapon() {
+  document.querySelectorAll('#panel [data-wpn]').forEach(el => el.addEventListener('click', () => { buyWeapon(el.dataset.wpn); render(); save(); }));
+  document.querySelectorAll('#panel [data-strat-w]').forEach(el => el.addEventListener('click', () => { state.autos.buyWeaponsStrategy = el.dataset.stratW; render(); save(); }));
+  document.querySelectorAll('#panel [data-toggle-buy-weapons]').forEach(el => el.addEventListener('click', () => { state.autos.buyWeapons = !state.autos.buyWeapons; render(); save(); }));
+}
+function attachExp() { document.querySelectorAll('#panel [data-exp]').forEach(el => el.addEventListener('click', () => startExpedition(el.dataset.exp))); }
+function attachResearch() { document.querySelectorAll('#panel [data-rs]').forEach(el => el.addEventListener('click', () => buyResearch(el.dataset.rs))); }
+function attachAnom() {
+  document.querySelectorAll('#panel [data-anom-choice]').forEach(el => el.addEventListener('click', () => resolveAnomaly(parseInt(el.dataset.anomChoice))));
+  document.querySelectorAll('#panel [data-anom-resolve]').forEach(el => el.addEventListener('click', () => resolveAnomaly(0)));
+  document.querySelectorAll('#panel [data-anom-fight]').forEach(el => el.addEventListener('click', () => startAnomalyFight()));
+}
+function attachPrestige() {
+  const r = document.getElementById('do-refine'); if (r) r.onclick = doRefine;
+  const w = document.getElementById('do-warp'); if (w) w.onclick = doWarp;
+  const a = document.getElementById('do-ascend'); if (a) a.onclick = doAscend;
+  document.querySelectorAll('#panel [data-toggle-auto]').forEach(el => el.addEventListener('click', () => {
+    state.autos[el.dataset.toggleAuto] = !state.autos[el.dataset.toggleAuto];
+    render(); save();
+  }));
+}
+function attachMeta() {
+  document.querySelectorAll('#panel [data-meta]').forEach(el => el.addEventListener('click', () => buyMeta(el.dataset.meta)));
+  const eraBtn = document.getElementById('buy-era'); if (eraBtn) eraBtn.onclick = buyEra;
+}
+
+function renderMine() {
+  let html = `<div class="section-title">EXTRACTION FLEET<span class="sub">${fmt(totalRate())}/s</span></div>`;
+  if (era() >= 1) {
+    const on = state.autos.buyMiners;
+    html += `<div class="auto-toggle-row">
+      <div class="row-top">
+        <span style="font-size:10px;color:var(--green);letter-spacing:0.1em">AUTO-BUY <span class="dot ${on?'green':'red'}"></span>${on?'ACTIVE':'PAUSED'}</span>
+        <button class="btn small" data-toggle-buy-miners style="border-color:${on?'var(--bad)':'var(--green)'};color:${on?'var(--bad)':'var(--green)'}">${on?'PAUSE':'RESUME'}</button>
+      </div>
+      <div class="strategy-chips">
+        <span style="font-size:9px;color:var(--ink-dim);align-self:center;margin-right:4px">STRATEGY:</span>
+        <span class="strategy-chip ${state.autos.buyMinersStrategy==='cheap'?'active':''}" data-strat-m="cheap">CHEAPEST</span>
+        <span class="strategy-chip ${state.autos.buyMinersStrategy==='efficient'?'active':''}" data-strat-m="efficient">BEST RATE/COST</span>
+        <span class="strategy-chip ${state.autos.buyMinersStrategy==='highest'?'active':''}" data-strat-m="highest">HIGHEST TIER</span>
+      </div>
+    </div>`;
+  }
+  let unlocked = 0;
+  for (let i = 0; i < MINERS.length; i++) {
+    const m = MINERS[i]; const owned = state.miners[m.id]; const cost = minerCost(m, owned);
+    const prevOwned = i === 0 ? 1 : state.miners[MINERS[i-1].id];
+    const visible = i === 0 || prevOwned > 0 || state.totalOre >= m.base / 2;
+    if (!visible) continue;
+    unlocked = i;
+    const can = state.ore >= cost;
+    const out = m.rate * owned * globalMult() * (1 + bonusFromResearch('mineRate'));
+    html += `<div class="item ${can?'affordable':'cant'}" data-buy="${m.id}">
+      <div>
+        <div class="name">${m.name}</div>
+        <div class="desc">${m.desc} · ${fmt(m.rate * globalMult() * (1 + bonusFromResearch('mineRate')))}/s each</div>
+        <div class="qty">OWNED ${owned} · ${fmt(out)}/s</div>
+      </div>
+      <div class="buy"><div class="label">COST</div><div class="cost">${fmt(cost)}</div></div>
+    </div>`;
+  }
+  if (unlocked < MINERS.length - 1) {
+    const next = MINERS[unlocked + 1];
+    html += `<div style="text-align:center;font-size:10px;color:var(--ink-dim);margin-top:6px;letter-spacing:0.15em">/// LOCKED: ${next.name.toUpperCase()} — ${fmt(next.base/2)} ORE TO REVEAL</div>`;
+  }
+  return html;
+}
+
+function renderCombatPanel() {
+  let html = `<div class="section-title combat">WEAPON LOADOUT<span class="sub">${fmt(totalDPS())} DPS</span></div>`;
+  if (era() >= 2) {
+    const on = state.autos.buyWeapons;
+    html += `<div class="auto-toggle-row">
+      <div class="row-top">
+        <span style="font-size:10px;color:var(--green);letter-spacing:0.1em">AUTO-BUY <span class="dot ${on?'green':'red'}"></span>${on?'ACTIVE':'PAUSED'}</span>
+        <button class="btn small" data-toggle-buy-weapons style="border-color:${on?'var(--bad)':'var(--green)'};color:${on?'var(--bad)':'var(--green)'}">${on?'PAUSE':'RESUME'}</button>
+      </div>
+      <div class="strategy-chips">
+        <span style="font-size:9px;color:var(--ink-dim);align-self:center;margin-right:4px">STRATEGY:</span>
+        <span class="strategy-chip ${state.autos.buyWeaponsStrategy==='cheap'?'active':''}" data-strat-w="cheap">CHEAPEST</span>
+        <span class="strategy-chip ${state.autos.buyWeaponsStrategy==='efficient'?'active':''}" data-strat-w="efficient">BEST DPS/COST</span>
+        <span class="strategy-chip ${state.autos.buyWeaponsStrategy==='highest'?'active':''}" data-strat-w="highest">HIGHEST TIER</span>
+      </div>
+    </div>`;
+  }
+  const enc = getCurrentEncounter();
+  if (enc) {
+    const ttk = totalDPS() > 0 ? state.enemyHp / totalDPS() : Infinity;
+    let label;
+    if (enc.isAnomaly) label = '<span style="color:var(--violet)">⚡ ANOMALY: ' + enc.name + '</span>';
+    else if (enc.isBoss) label = '<span style="color:var(--gold)">⚠ ' + enc.name + '</span>';
+    else label = '<span style="color:var(--crimson)">' + enc.name + '</span>';
+    const oreReward = Math.floor(enc.reward * 10 * (enc.isBoss ? 1 + 0.25*(state.meta.bossres||0) : 1));
+    html += `<div style="font-size:10px;color:var(--ink-dim);margin-bottom:8px;line-height:1.6">
+      Target: ${label} ·
+      ${enc.isAnomaly ? 'Reward: <span style="color:var(--violet)">ANOMALY BUFF</span>' : 'Reward: <span style="color:var(--orange)">+' + fmt(oreReward) + ' ORE</span>'} ·
+      ETA: <span style="color:var(--cyan)">${ttk === Infinity ? '∞' : ttk.toFixed(1) + 's'}</span>
+    </div>`;
+  }
+  let hasShown = false;
+  for (let i = 0; i < WEAPONS.length; i++) {
+    const w = WEAPONS[i]; const unlocked = weaponUnlocked(w); const owned = state.weapons[w.id];
+    if (!unlocked && owned === 0) {
+      if (!hasShown) continue;
+      let unlockText = '';
+      if (w.unlock.startsWith('kills:')) unlockText = `Kill ${w.unlock.split(':')[1]} enemies (${state.kills}/${w.unlock.split(':')[1]})`;
+      else if (w.unlock.startsWith('boss:')) unlockText = `Defeat boss tier ${w.unlock.split(':')[1]}`;
+      html += `<div class="item cant"><div><div class="name" style="color:var(--ink-dim)">??? LOCKED</div><div class="desc">${unlockText}</div></div><div class="buy"><div class="label">LOCKED</div><div class="cost" style="color:var(--bad)">—</div></div></div>`;
+      break;
+    }
+    if (!unlocked) continue;
+    hasShown = true;
+    const cost = weaponCost(w, owned);
+    const can = state.ore >= cost;
+    const wpnMult = (1 + 0.25*(state.meta.wpndmg||0)) * (1 + bonusFromResearch('wpnDmg')) * globalMult();
+    const out = w.dps * owned * wpnMult;
+    html += `<div class="item weapon ${can?'affordable':'cant'}" data-wpn="${w.id}">
+      <div>
+        <div class="name">${w.name}</div>
+        <div class="desc">${w.desc} · ${fmt(w.dps * wpnMult)} DPS each</div>
+        <div class="qty">OWNED ${owned} · ${fmt(out)} DPS</div>
+      </div>
+      <div class="buy"><div class="label">ORE</div><div class="cost">${fmt(cost)}</div></div>
+    </div>`;
+  }
+  html += `<div class="section-title combat" style="margin-top:14px">SECTOR PROGRESS<span class="sub">${state.kills} KILLS</span></div>`;
+  for (const stage of STAGES) {
+    const cleared = state.bossesDefeated[stage.id];
+    const everCleared = state.bossesEverDefeated[stage.id] > 0;
+    const isCurrent = state.currentStage === stage.id && !cleared;
+    let st, sc;
+    if (cleared) { st = '✓ CLEARED'; sc = ''; }
+    else if (isCurrent) { st = '◆ ACTIVE'; sc = ''; }
+    else if (everCleared) { st = '↻ REPEAT'; sc = ''; }
+    else { st = '✗ LOCKED'; sc = 'locked'; }
+    html += `<div class="unlock ${sc}"><span>S${stage.id} · ${stage.name.toUpperCase()} → ${stage.boss.name}</span><span>${st}</span></div>`;
+  }
+  return html;
+}
+
+function renderExpeditions() {
+  let html = `<div class="section-title exp">EXPEDITIONS<span class="sub">${state.expeditionsHistory} COMPLETED</span></div>`;
+  html += `<div style="font-size:10px;color:var(--ink-dim);margin-bottom:10px;line-height:1.5">Send Scout Drones away on missions. Reduces mining rate while away, returns Crystals + Scrap.</div>`;
+  for (const e of EXPEDITIONS) {
+    const ex = state.expeditions[e.id];
+    const active = ex && ex.active;
+    const dur = expDuration(e);
+    const yld = expYield(e);
+    let progress = 0; let remaining = dur;
+    if (active) {
+      const elapsed = (Date.now() - ex.startTime) / 1000;
+      progress = Math.min(100, (elapsed / dur) * 100);
+      remaining = Math.max(0, dur - elapsed);
+    }
+    const canStart = state.miners.drone >= e.minerCost && !active;
+    html += `<div class="expedition-card ${active ? 'ex-active' : ''}">
+      <div class="ex-icon">${e.icon}</div>
+      <div class="ex-name">${e.name}</div>
+      <div class="ex-desc">${e.desc}</div>
+      <div class="ex-row">
+        <span style="color:var(--ink-dim)">Cost: <span style="color:var(--cyan)">${e.minerCost} drones</span></span>
+        <span style="color:var(--ink-dim)">Time: <span style="color:var(--ink)">${fmtTime(dur)}</span></span>
+      </div>
+      <div class="ex-row">
+        <span style="color:var(--ink-dim)">Yield:</span>
+        <span><span style="color:var(--magenta)">+${yld.crys} CRYS</span> · <span style="color:var(--orange)">+${fmt(yld.scrap)} SCRAP</span>${yld.sing?` · <span style="color:var(--gold)">20% +${yld.sing} SING</span>`:''}</span>
+      </div>
+      ${active ? `
+        <div class="ex-progress"><div class="ex-progress-fill" style="width:${progress}%"></div></div>
+        <div class="ex-row"><span style="color:var(--green)">// IN TRANSIT</span><span style="color:var(--ink-dim)">${fmtTime(remaining)} left</span></div>
+      ` : `
+        <button class="btn go green" data-exp="${e.id}" ${canStart?'':'disabled'} style="margin-top:8px">${canStart?'LAUNCH':(state.miners.drone < e.minerCost ? 'NEED '+e.minerCost+' DRONES' : 'IN PROGRESS')}</button>
+      `}
+    </div>`;
+  }
+  return html;
+}
+
+function renderResearch() {
+  let html = `<div class="section-title research">RESEARCH MATRIX<span class="sub">${state.sing} SING AVAIL</span></div>`;
+  html += `<div style="font-size:10px;color:var(--ink-dim);margin-bottom:10px;line-height:1.5">Spend Singularities on permanent upgrades. Persist across Refine/Warp, reset on Ascend.</div>`;
+  html += `<div class="research-grid">`;
+  const cols = [
+    { name: 'MINING', color: 'var(--cyan)' },
+    { name: 'COMBAT', color: 'var(--crimson)' },
+    { name: 'AUTOMATION', color: 'var(--green)' }
+  ];
+  for (const c of cols) html += `<div class="research-tree-col" style="color:${c.color}">${c.name}</div>`;
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 3; col++) {
+      const node = RESEARCH.find(r => r.col === col && r.row === row);
+      if (!node) { html += '<div></div>'; continue; }
+      const purchased = !!state.research[node.id];
+      const prereqMet = node.prereq.every(p => state.research[p]);
+      const cost = Math.ceil(node.cost * (1 - 0.1 * (state.meta.rsdisc||0)));
+      const can = !purchased && prereqMet && state.sing >= cost;
+      const cls = purchased ? 'purchased' : (can ? 'affordable' : (prereqMet ? '' : 'locked'));
+      html += `<div class="research-node ${cls}" data-rs="${node.id}">
+        <div>
+          <div class="rn-name">${node.name}</div>
+          <div class="rn-desc">${node.desc}</div>
+        </div>
+        <div class="rn-cost">${purchased ? '✓ DONE' : cost + ' SING'}</div>
+      </div>`;
+    }
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderAnomaly() {
+  let html = `<div class="section-title anomaly">ANOMALIES<span class="sub">${state.activeBuffs.length} ACTIVE BUFFS</span></div>`;
+  if (state.activeBuffs.length > 0) {
+    html += `<div style="margin-bottom:10px">`;
+    for (const b of state.activeBuffs) {
+      const remain = Math.max(0, (b.expiresAt - Date.now()) / 1000);
+      let label = b.type;
+      if (b.type === 'oreMult') label = `×${b.val} ORE`;
+      if (b.type === 'dpsMult') label = `×${b.val} DPS`;
+      html += `<div class="unlock violet"><span>★ ${label} active</span><span>${fmtTime(remain)}</span></div>`;
+    }
+    html += `</div>`;
+  }
+  if (state.inAnomalyFight) {
+    html += `<div class="anomaly-card" data-type="flare">
+      <div class="a-icon">⚔</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="a-name">⚔ ENGAGEMENT</div>
+        <div class="a-timer" style="color:var(--violet)">FIGHTING</div>
+      </div>
+      <div class="a-desc">Combat in progress. Switch to FIGHT tab to deal extra damage by tapping. Win to claim the buff!</div>
+    </div>`;
+  } else if (state.pendingAnomaly) {
+    const t = ANOMALY_TYPES.find(x => x.id === state.pendingAnomaly.typeId);
+    const remain = Math.max(0, (state.pendingAnomaly.expiresAt - Date.now()) / 1000);
+    html += `<div class="anomaly-card" data-type="${t.id}">
+      <div class="a-icon">${t.icon}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div class="a-name">${t.name}</div>
+        <div class="a-timer">${fmtTime(remain)} LEFT</div>
+      </div>
+      <div class="a-desc">${t.desc}</div>`;
+    if (t.isCombat) {
+      html += `<button class="btn go combat" data-anom-fight style="margin-top:8px">⚔ ENGAGE ${t.bossName}</button>`;
+    } else if (t.choices) {
+      html += `<div class="a-choice">`;
+      t.choices.forEach((c, i) => {
+        html += `<button class="btn small go ascend" data-anom-choice="${i}" style="flex:1">${c.label}</button>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<button class="btn go ascend" data-anom-resolve style="margin-top:8px">CLAIM</button>`;
+    }
+    html += `</div>`;
+  } else {
+    html += `<div class="radar-empty">
+      <span>// QUANTUM SENSORS ACTIVE //<br><br>
+      An anomaly will manifest soon.<br><br>
+      <span style="color:var(--violet)">Next scan in ~${fmtTime(Math.max(0, (600/(1+0.25*(state.meta.anchance||0))) - state.anomalyAcc))}</span></span>
+    </div>`;
+  }
+  html += `<div class="section-title anomaly" style="margin-top:14px">SECTOR PHENOMENA</div>
+  <div style="font-size:10px;color:var(--ink-dim);line-height:1.7">
+    Anomalies are random galactic events. Some are fights, some are choices, some are gifts.<br><br>
+    <b style="color:var(--orange)">☼ Solar Flare:</b> defeat the Flare Lord for ×3 ore<br>
+    <b style="color:var(--cyan)">⚡ Quantum Storm:</b> pick ×10 ore OR ×10 DPS<br>
+    <b style="color:var(--green)">◯ Temporal Rift:</b> claim 30 min of mining instantly<br>
+    <b style="color:var(--gold)">◇ Supply Cache:</b> free crystals
+  </div>`;
+  return html;
+}
+
+function renderStats() {
+  let html = `<div class="section-title">ACTIVE BOOSTS<span class="sub">×${fmt(globalMult())} mult</span></div>`;
+  html += `
+    <div class="item"><div>
+      <div class="name">Crystal Resonance</div>
+      <div class="desc">Each Crystal: +${(2+0.5*(state.meta.crys||0)).toFixed(1)}% Ore + DPS</div>
+      <div class="qty">${state.crys} crys · ×${(1 + state.crys * (0.02+0.005*(state.meta.crys||0))).toFixed(2)}</div>
+    </div><div class="buy"><div class="label">PASSIVE</div><div class="cost" style="color:var(--magenta)">CRYS</div></div></div>
+    <div class="item"><div>
+      <div class="name">Singularity Field</div>
+      <div class="desc">Each Sing: +50% (compound)</div>
+      <div class="qty">${state.sing} sing · ×${Math.pow(1.5, Math.min(state.sing, 50)).toFixed(2)}</div>
+    </div><div class="buy"><div class="label">PASSIVE</div><div class="cost" style="color:var(--gold)">SING</div></div></div>
+    <div class="item"><div>
+      <div class="name">Sector Drift</div>
+      <div class="desc">Each Sector: ×2</div>
+      <div class="qty">Sector ${String(state.sector).padStart(2,'0')} · ×${Math.pow(2, Math.min(state.sector-1, 20)).toFixed(0)}</div>
+    </div><div class="buy"><div class="label">PASSIVE</div><div class="cost" style="color:var(--cyan)">WARP</div></div></div>`;
+  if (state.forgeModifiers.length > 0) {
+    html += `<div class="item"><div>
+      <div class="name" style="color:var(--violet)">Active Modifiers</div>
+      <div class="desc">${state.forgeModifiers.map(id => FORGE_MODIFIERS.find(m=>m.id===id).name).join(' · ')}</div>
+      <div class="qty">${state.forgeModifiers.length}/3 slots used</div>
+    </div><div class="buy"><div class="label">FORGE</div><div class="cost" style="color:var(--violet)">RUN</div></div></div>`;
+  }
+  const rsCount = Object.keys(state.research).length;
+  if (rsCount > 0) {
+    html += `<div class="item"><div>
+      <div class="name" style="color:var(--gold)">Research</div>
+      <div class="desc">${rsCount}/${RESEARCH.length} nodes purchased</div>
+      <div class="qty">Mining +${(bonusFromResearch('mineRate')*100).toFixed(0)}% · Wpn +${(bonusFromResearch('wpnDmg')*100).toFixed(0)}% · Global ×${(1+bonusFromResearch('globalMult')).toFixed(1)}</div>
+    </div><div class="buy"><div class="label">PERM</div><div class="cost" style="color:var(--gold)">SING</div></div></div>`;
+  }
+  html += `<div class="item"><div>
+    <div class="name">Mining Rate</div>
+    <div class="desc">Total ore generation per second</div>
+    <div class="qty">${fmt(totalRate())}/s passive</div>
+  </div><div class="buy"><div class="label">RATE</div><div class="cost" style="color:var(--cyan)">ORE</div></div></div>
+  <div class="item weapon"><div>
+    <div class="name">Combat DPS</div>
+    <div class="desc">Damage dealt to enemies per second</div>
+    <div class="qty">${fmt(totalDPS())} DPS · tap ${fmt(tapDamage())} (${(critChance()*100).toFixed(0)}% crit)</div>
+  </div><div class="buy"><div class="label">RATE</div><div class="cost">DPS</div></div></div>`;
+  html += `<div class="section-title" style="margin-top:14px">RUN STATS</div>
+  <div style="font-size:10px;color:var(--ink-dim);line-height:1.8">
+    Total Ore: <span style="color:var(--cyan)">${fmt(state.totalOre)}</span><br>
+    Total Crystals: <span style="color:var(--magenta)">${fmt(state.totalCrys)}</span><br>
+    Total Singularities: <span style="color:var(--gold)">${fmt(state.totalSing)}</span><br>
+    Total Scrap: <span style="color:var(--orange)">${fmt(state.totalScrap)}</span><br>
+    Kills this run: ${state.kills} · Expeditions: ${state.expeditionsHistory}<br>
+    Refines: ${state.refineCount} · Warps: ${state.warpCount} · Ascensions: ${state.ascendCount}<br>
+    Lifetime bosses: T1 ×${state.bossesEverDefeated[1]} · T2 ×${state.bossesEverDefeated[2]} · T3 ×${state.bossesEverDefeated[3]}
+  </div>`;
+  return html;
+}
+
+// Render a "next tier" progress strip: shows current/needed with a thin bar
+function renderNextTier(current, needed, nextGain, currentGain, color, unit) {
+  const pct = Math.max(0, Math.min(100, (current / needed) * 100));
+  const remaining = Math.max(0, needed - current);
+  const willHave = currentGain + 1 > nextGain ? nextGain : nextGain;
+  return `
+    <div style="margin: 6px 0 8px; font-size: 10px; color: var(--ink-dim); letter-spacing: 0.05em">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span>Next +${nextGain - currentGain} at <span style="color:${color}">${fmt(needed)}</span> ${unit}</span>
+        <span style="color:${color}">${fmt(remaining)} to go</span>
+      </div>
+      <div style="height: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); position: relative">
+        <div style="height: 100%; width: ${pct}%; background: ${color}; box-shadow: 0 0 6px ${color}; transition: width 0.3s ease"></div>
+      </div>
+    </div>`;
+}
+
+function renderPrestige() {
+  const refG = refineGain(); const warpG = warpGain(); const ascG = ascendGain();
+  let html = '';
+  const t1 = state.bossesDefeated[1];
+  html += `<div class="prestige-box refine">
+    <h3>// REFINE</h3>
+    <p>Smelt your ore into permanent Crystals. Resets Ore, Miners, Weapons, Combat. Each Crystal: +${(2+0.5*(state.meta.crys||0)).toFixed(1)}% production & DPS.</p>
+    <div class="gate ${t1?'cleared':''}">${t1?'✓ GATE CLEARED':'✗ GATE: Defeat SECTOR WARDEN'}</div>`;
+  if (era() >= 2) {
+    const on = state.autos.refine;
+    html += `<div class="auto-status"><span><span class="dot ${on?'green':'red'}"></span>AUTO-REFINE: ${on?'ON':'OFF'}</span><button class="btn small" data-toggle-auto="refine" style="border-color:${on?'var(--bad)':'var(--green)'};color:${on?'var(--bad)':'var(--green)'}">${on?'PAUSE':'ENABLE'}</button></div>`;
+  }
+  html += `<div class="gain">Gain: <b style="color:var(--magenta)">${fmt(refG)}</b> Crystals</div>
+    <div class="gain" style="font-size:10px;color:var(--ink-dim)">Need ${fmt(refineThreshold())} ore · You have ${fmt(state.totalOre)}</div>
+    ${(() => { const n = nextRefineThreshold(); return n ? renderNextTier(state.totalOre, n.needed, n.nextGain, refG, 'var(--magenta)', 'ore') : ''; })()}
+    <button class="btn go refine" id="do-refine" ${refG<=0?'disabled':''}>REFINE</button>
+  </div>`;
+  if (state.totalCrys > 0 || state.sing > 0 || state.totalSing > 0 || state.bossesEverDefeated[1] > 0) {
+    const t2 = state.bossesDefeated[2];
+    html += `<div class="prestige-box warp">
+      <h3>// WARP</h3>
+      <p>Collapse a star into a Singularity. Resets Ore + Crystals. Each Sing: ×1.5 production. Advances Sector (×2 base).</p>
+      <div class="gate ${t2?'cleared':''}">${t2?'✓ GATE CLEARED':'✗ GATE: Defeat STAR EATER'}</div>`;
+    if (era() >= 3) {
+      const on = state.autos.warp;
+      html += `<div class="auto-status"><span><span class="dot ${on?'green':'red'}"></span>AUTO-WARP: ${on?'ON':'OFF'}</span><button class="btn small" data-toggle-auto="warp" style="border-color:${on?'var(--bad)':'var(--green)'};color:${on?'var(--bad)':'var(--green)'}">${on?'PAUSE':'ENABLE'}</button></div>`;
+    }
+    html += `<div class="gain">Gain: <b style="color:var(--gold)">${fmt(warpG)}</b> Singularities</div>
+      <div class="gain" style="font-size:10px;color:var(--ink-dim)">Need 25 Crystals · You have ${fmt(state.totalCrys)}</div>
+      ${(() => { const n = nextWarpThreshold(); return n ? renderNextTier(state.totalCrys, n.needed, n.nextGain, warpG, 'var(--gold)', 'crys') : ''; })()}
+      <button class="btn go warp" id="do-warp" ${warpG<=0?'disabled':''}>WARP</button>
+    </div>`;
+  } else {
+    html += `<div class="prestige-box" style="opacity:0.5"><h3 style="color:var(--ink-dim)">// WARP — LOCKED</h3><p>Refine first to unlock.</p></div>`;
+  }
+  if (state.totalSing > 0 || state.dm > 0 || state.ascendCount > 0 || state.bossesEverDefeated[2] > 0) {
+    const t3 = state.bossesDefeated[3];
+    html += `<div class="prestige-box ascend">
+      <h3>// ASCEND</h3>
+      <p>Tear open the void. Resets EVERYTHING except Dark Matter, Era unlocks, META, and Research. ${era() >= 3 ? 'Pick Forge modifiers on ascend.' : ''}</p>
+      <div class="gate ${t3?'cleared':''}">${t3?'✓ GATE CLEARED':'✗ GATE: Defeat VOID SOVEREIGN'}</div>`;
+    if (era() >= 4) {
+      const on = state.autos.ascend;
+      html += `<div class="auto-status"><span><span class="dot ${on?'green':'red'}"></span>AUTO-ASCEND: ${on?'ON':'OFF'}</span><button class="btn small" data-toggle-auto="ascend" style="border-color:${on?'var(--bad)':'var(--green)'};color:${on?'var(--bad)':'var(--green)'}">${on?'PAUSE':'ENABLE'}</button></div>`;
+    }
+    html += `<div class="gain">Gain: <b style="color:var(--violet)">${fmt(ascG)}</b> Dark Matter</div>
+      <div class="gain" style="font-size:10px;color:var(--ink-dim)">Need 4 Singularities · You have ${fmt(state.totalSing)}</div>
+      ${(() => { const n = nextAscendThreshold(); return n ? renderNextTier(state.totalSing, n.needed, n.nextGain, ascG, 'var(--violet)', 'sing') : ''; })()}
+      <button class="btn go ascend" id="do-ascend" ${ascG<=0?'disabled':''}>ASCEND</button>
+    </div>`;
+  } else {
+    html += `<div class="prestige-box" style="opacity:0.5"><h3 style="color:var(--ink-dim)">// ASCEND — LOCKED</h3><p>Warp first to unlock.</p></div>`;
+  }
+  return html;
+}
+
+function renderMeta() {
+  if (state.dm <= 0 && state.ascendCount === 0) {
+    return `<div style="text-align:center;padding:30px 10px;color:var(--ink-dim);font-size:11px;line-height:1.8;letter-spacing:0.1em">
+      // META TERMINAL OFFLINE //<br><br>
+      Reach your first ASCEND to unlock<br>permanent Dark Matter upgrades<br>and Era progression.<br><br>
+      <span style="color:var(--violet)">DM persists across all resets.</span>
+    </div>`;
+  }
+  let html = `<div class="section-title" style="color:var(--violet);border-color:rgba(180,138,255,0.3)">ERA PROGRESSION<span class="sub">${state.dm} DM</span></div>`;
+  for (const eD of ERAS) {
+    const unlocked = state.erasUnlocked >= eD.id;
+    const next = state.erasUnlocked + 1 === eD.id;
+    const cls = unlocked ? 'unlocked' : (next ? 'active-era' : 'locked');
+    let features = '';
+    if (eD.id === 1) features = '<span class="ft">+ Auto-buy miners (3 strategies)</span><span class="ft">+ Expeditions (5min/30min/2hr/6hr)</span><span class="ft">+ 2 Era 1 META upgrades</span>';
+    else if (eD.id === 2) features = '<span class="ft">+ Auto-buy weapons</span><span class="ft">+ Auto-Refine</span><span class="ft">+ Research tree (12 nodes)</span><span class="ft">+ AI Tutor META</span>';
+    else if (eD.id === 3) features = '<span class="ft">+ Auto-Warp</span><span class="ft">+ Anomalies (4 event types + combat)</span><span class="ft">+ Singularity Forge (9 modifiers)</span><span class="ft">+ Quantum Sensor META</span>';
+    else features = '<span class="ft">+ Auto-Ascend</span><span class="ft">+ Pure idle endgame</span>';
+    html += `<div class="era-card ${cls}">
+      <div class="era-num">0${eD.id}</div>
+      <h3>ERA ${eD.id} · ${eD.name.toUpperCase()}</h3>
+      <div class="desc">${eD.desc}</div>
+      <div class="feature-list">${features}</div>`;
+    if (unlocked) html += `<div class="cost-line" style="color:var(--green)">✓ UNLOCKED</div>`;
+    else if (next) html += `<div class="cost-line" style="color:var(--violet)">Cost: ${eD.cost} DM</div><button class="btn go ascend" id="buy-era" ${state.dm < eD.cost ? 'disabled' : ''}>PURCHASE ERA ${eD.id}</button>`;
+    else html += `<div class="cost-line" style="color:var(--ink-dim)">Cost: ${eD.cost} DM (locked behind Era ${eD.id-1})</div>`;
+    html += `</div>`;
+  }
+  html += `<div class="section-title" style="margin-top:14px">DARK MATTER UPGRADES<span class="sub">${fmt(state.dm)} DM</span></div>`;
+  for (const u of META) {
+    if (u.era && era() < u.era) continue;
+    const owned = state.meta[u.id];
+    const maxed = owned >= u.max;
+    const can = state.dm >= u.cost && !maxed;
+    html += `<div class="item ${can?'affordable':'cant'}" ${can?`data-meta="${u.id}"`:''}>
+      <div>
+        <div class="name" style="color:var(--violet)">${u.name}${u.era?` <span style="color:var(--ink-dim);font-size:9px">[E${u.era}+]</span>`:''}</div>
+        <div class="desc">${u.desc}</div>
+        <div class="qty">${owned}/${u.max} ${maxed?'· MAXED':''}</div>
+      </div>
+      <div class="buy">
+        <div class="label">${maxed?'DONE':'COST'}</div>
+        <div class="cost" style="color:${maxed?'var(--ok)':(can?'var(--violet)':'var(--bad)')}">${maxed?'✓':u.cost+' DM'}</div>
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+function render() {
+  renderResources(); renderTabs(); renderPanel(); renderCombat();
+}
+
+// ===== EVENTS =====
+document.getElementById('core').addEventListener('pointerdown', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  if (state.mode === 'mine') {
+    const tp = tapPower();
+    if (tp > 0) {
+      state.ore += tp; state.totalOre += tp;
+      spawnFloat(e.clientX - rect.left, e.clientY - rect.top, '+' + fmt(tp));
+    }
+  } else {
+    if (hasModifier('mfAuto')) return;
+    const isCrit = Math.random() < critChance();
+    const dmg = tapDamage() * (isCrit ? 3 : 1);
+    spawnFloat(e.clientX - rect.left, e.clientY - rect.top, (isCrit?'CRIT ':'')+'-'+fmt(dmg), isCrit?'crit':'dmg');
+    damageEnemy(dmg, true);
+  }
+  renderResources();
+  if (state.tab === 'mine' || state.tab === 'combat') renderPanel();
+});
+
+document.getElementById('mode-toggle').addEventListener('click', (e) => {
+  e.stopPropagation();
+  state.mode = state.mode === 'mine' ? 'combat' : 'mine';
+  const btn = document.getElementById('mode-toggle');
+  if (state.mode === 'combat') { btn.textContent = '/ FIGHT'; btn.classList.add('combat'); }
+  else { btn.textContent = '/ MINE'; btn.classList.remove('combat'); }
+  render();
+});
+
+document.getElementById('reset-btn').addEventListener('click', async () => {
+  if (!confirm('Permanently delete ALL progress including Dark Matter, Eras, META, and Research?')) return;
+  await wipe();
+  state = freshState(); state.ore = startingOre(); spawnNextEnemy();
+  applyEraTheme();
+  render(); toast('// MEMORY WIPED', 'bad');
+});
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  exportSave();
+});
+
+document.getElementById('import-btn').addEventListener('click', () => {
+  const code = prompt('Paste your save code here:');
+  if (code && code.trim()) importSave(code);
+});
+
+document.getElementById('mute-btn').addEventListener('click', toggleMute);
+
+// Unlock audio after first user gesture (browser requirement)
+unlockAudioOnFirstGesture();
+// Restore mute label from saved preference
+try {
+  if (localStorage.getItem('voidminers:muted') === '1') {
+    audioCtl.muted = true;
+    const btn = document.getElementById('mute-btn');
+    if (btn) btn.textContent = '♪ OFF';
+  }
+} catch (e) {}
+
+(async function init() {
+  const loaded = await load();
+  if (loaded) {
+    applyOffline();
+    if (!state.enemyMaxHp) spawnNextEnemy();
+  } else {
+    state.ore = startingOre(); spawnNextEnemy();
+  }
+  state.lastTick = Date.now();
+  applyEraTheme();
+  render();
+  setInterval(tick, 100);
+  setInterval(save, 5000);
+  setInterval(() => {
+    if (['mine','prestige','combat','upgrade','expedition','research','anomaly','meta'].includes(state.tab)) renderPanel();
+    renderTabs();
+  }, 700);
+  document.getElementById('status').textContent = '// LINK STABLE';
+})();
+
+window.addEventListener('pagehide', save);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+</script>
+
+</body>
+</html>
